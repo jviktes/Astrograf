@@ -11,6 +11,8 @@ https://lastminuteengineers.com/i2c-lcd-arduino-tutorial/
 
 Pokusy s měřením pomocí gyroskoupu:
 
+úhly mají v bytě podivné odchylky
+
 magnetická odchylka pro dané místo
 https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml?#declination
 
@@ -22,5 +24,8 @@ Naměřené úhly:
 
 LBC --> komín Rýnovice: 125.88 vzdálenost: 4.4km
 LBC -->Ještěd: 247.74, vzdálenost: 8.58km
+
+Odchylka na Ješted je asi 10st, na komín asi 20, stejně tak na Měsíc. Snaha o kalibraci aplikace Kompas v mobilu, ale také ukazuje podivnosti, na Ještě d celkem ok +-2 st, možná i přesněji, na komín ale stále +-10, nerozumím. Je nutná důsledná kalibrace sensoru např. podle https://learn.adafruit.com/adafruit-sensorlab-magnetometer-calibration?view=all
+--> opouštím od magnetických sensorů, jsou velice nepřesné a pokusím se udělat to přes motorky a počítání kroků a kalibraci se zaměřením na Ještěd a odpočtu známého azimutu.
 
 
