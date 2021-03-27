@@ -104,6 +104,9 @@ void loop(void)
   }
   
   lcd.print("Az:"+String(headingCorrectAngle)); //ukazuje uhel v minus a obracene proti smeru S-->V atd.
+
+Serial.println("V:"+String(orientation.pitch));
+Serial.println("Az:"+String(headingCorrectAngle));
   
   delay(1000);
   lcd.clear();
