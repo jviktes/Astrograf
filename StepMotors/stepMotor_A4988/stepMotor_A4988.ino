@@ -1,3 +1,4 @@
+//test prepisu
 // Define pin connections & motor's steps per revolution
 const int dirPin = 2;
 const int stepPin = 3;
