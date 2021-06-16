@@ -48,7 +48,9 @@ long TSL;
 unsigned long t_ciclo_acumulado = 0, t_ciclo;
 
 long Az_tel_s, Alt_tel_s;
+
 long AR_tel_s, DEC_tel_s;
+
 long AR_stell_s, DEC_stell_s;
 
 double cos_phi, sin_phi;
@@ -141,9 +143,11 @@ void read_sensors() {
   if (encoderValue2 >= pulses_enc2 || encoderValue2 <= -pulses_enc2) {
     encoderValue2 = 0;
   }
+  
   int enc1 = encoderValue1 / 1500;
   long encoder1_temp = encoderValue1 - (enc1 * 1500);
   long map1 = enc1 * map(1500, 0, pulses_enc1, 0, 324000);
+  
   int enc2 = encoderValue2 / 1500;
   long encoder2_temp = encoderValue2 - (enc2 * 1500);
   long map2 = enc2 * map(1500, 0, pulses_enc2, 0, 1296000);
@@ -176,6 +180,7 @@ void Encoder2() {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------
+//vystupem jsou txAr a txDEC = naformatovane hodnoty souradnic v EQ
 void AZ_to_EQ()
 {
   double delta_tel, sin_h, cos_h, sin_A, cos_A, sin_DEC, cos_DEC;
