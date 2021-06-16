@@ -120,8 +120,7 @@ void communication()
 
     mySerial.write("txAR");
     mySerial.write(txAR);
-
-            mySerial.write("txDEC");
+    mySerial.write("txDEC");
     mySerial.write(txDEC);
     
   if (input[1] == ':' && input[2] == 'G' && input[3] == 'R' && input[4] == '#') {
