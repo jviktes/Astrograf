@@ -86,7 +86,7 @@ void setup()
 //--------------------------------------------------------------------------------------------------------------------------------------------------------
 void loop()
 {
-  t_ciclo = millis();
+  t_ciclo = millis(); //cas od spusteni arduina
   if (t_ciclo_acumulado >= seg_sideral) {
     TSL++;
     t_ciclo_acumulado = t_ciclo_acumulado - seg_sideral;
