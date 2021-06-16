@@ -33,7 +33,7 @@ int POLARKA_HOUR_CLOCK_SS = 24;
 SoftwareSerial mySerial(7, 8); // RX, TX - toto slouzi je pro vypis, co posilam na stelarium
 
 unsigned long SEG_SIDERAL = 1003;
-const double      PI = 3.14159265358979324;
+const double  CONST_PI = 3.14159265358979324;
 volatile int lastEncoded1 = 0;
 volatile long encoderValue1 = 0;
 
@@ -70,8 +70,8 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(ENC_2A), Encoder_Interrupt_2, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_2B), Encoder_Interrupt_2, CHANGE);
 
-  cos_phi = cos((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + lPOSITION_LATITUDE_SS) / 3600.0) * PI / 180.0);
-  sin_phi = sin((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + lPOSITION_LATITUDE_SS) / 3600.0) * PI / 180.0);
+  cos_phi = cos((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + lPOSITION_LATITUDE_SS) / 3600.0) * CONST_PI / 180.0);
+  sin_phi = sin((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + lPOSITION_LATITUDE_SS) / 3600.0) * CONST_PI / 180.0);
 
   TSL = POLARKA_AR_HH * 3600 + POLARKA_AR_MM * 60 + POLARKA_AR_SS + POLARKA_HOUR_CLOCK_HH * 3600 + POLARKA_HOUR_CLOCK_MM * 60 + POLARKA_HOUR_CLOCK_SS;
   while (TSL >= 86400) TSL = TSL - 86400;
@@ -88,6 +88,8 @@ void setup()
 //--------------------------------------------------------------------------------------------------------------------------------------------------------
 void loop()
 {
+
+    delay(1000);
   time_running_arduino = millis(); //cas od spusteni arduina
   if (t_ciclo_acumulado >= SEG_SIDERAL) {
     TSL++;
@@ -154,7 +156,6 @@ void read_sensors() {
 
   int _enc_2 = encoderValue2 / 1500;
   long encoder2_temp = encoderValue2 - (_enc_2 * 1500);
-
   long map2 = _enc_2 * map(1500, 0, PULSES_ENC_2, 0, 1296000);
   Az_tel_s  = map2 + map (encoder2_temp, 0, PULSES_ENC_2, 0, 1296000);
 
@@ -193,8 +194,8 @@ void AZ_to_EQ()
   long decDEG, decMM, decSS;
   char sDEC_tel;
 
-  A_telRAD = (Az_tel_s / 3600.0) * PI / 180.0;
-  h_telRAD = (Alt_tel_s / 3600.0) * PI / 180.0;
+  A_telRAD = (Az_tel_s / 3600.0) * CONST_PI / 180.0;
+  h_telRAD = (Alt_tel_s / 3600.0) * CONST_PI / 180.0;
   sin_h = sin(h_telRAD);
   cos_h = cos(h_telRAD);
   sin_A = sin(A_telRAD);
@@ -202,7 +203,7 @@ void AZ_to_EQ()
   delta_tel = asin((sin_phi * sin_h) + (cos_phi * cos_h * cos_A));
   sin_DEC = sin(delta_tel);
   cos_DEC = cos(delta_tel);
-  DEC_tel_s = long((delta_tel * 180.0 / PI) * 3600.0);
+  DEC_tel_s = long((delta_tel * 180.0 / CONST_PI) * 3600.0);
 
   while (DEC_tel_s >= 324000) {
     DEC_tel_s = DEC_tel_s - 324000;
@@ -212,7 +213,7 @@ void AZ_to_EQ()
   }
 
   H_telRAD = acos((sin_h - (sin_phi * sin_DEC)) / (cos_phi * cos_DEC));
-  H_tel = long((H_telRAD * 180.0 / PI) * 240.0);
+  H_tel = long((H_telRAD * 180.0 / CONST_PI) * 240.0);
 
   if (sin_A >= 0) {
     H_tel = 86400 - H_tel;
