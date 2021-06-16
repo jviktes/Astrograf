@@ -30,9 +30,7 @@ int poleH_HH = 15;
 int poleH_MM = 33;
 int poleH_SS = 24;
 
-
-
-SoftwareSerial mySerial(7, 8); // RX, TX
+SoftwareSerial mySerial(7, 8); // RX, TX - toto slouzi je pro vypis, co posilam na stelarium
 
 unsigned long seg_sideral = 1003;
 const double      pi = 3.14159265358979324;
@@ -40,14 +38,19 @@ volatile int lastEncoded1 = 0;
 volatile long encoderValue1 = 0;
 volatile int lastEncoded2 = 0;
 volatile long encoderValue2 = 0;
+
 char input[20];
+//vystupem jsou txAr a txDEC = naformatovane hodnoty souradnic v EQ
 char txAR[10];
 char txDEC[11];
+
 long TSL;
 unsigned long t_ciclo_acumulado = 0, t_ciclo;
+
 long Az_tel_s, Alt_tel_s;
 long AR_tel_s, DEC_tel_s;
 long AR_stell_s, DEC_stell_s;
+
 double cos_phi, sin_phi;
 double alt, azi;
 
@@ -224,16 +227,8 @@ void AZ_to_EQ()
   decSS = (abs(DEC_tel_s) - decDEG * 3600) - decMM * 60;
   (DEC_tel_s < 0) ? sDEC_tel = 45 : sDEC_tel = 43;
 
-  
-//toto predpokladama, ze je zpusob zaslani dat na stelarium
+  //vystupem jsou txAr a txDEC = naformatovane hodnoty souradnic v EQ
   sprintf(txAR, "%02d:%02d:%02d#", int(arHH), int(arMM), int(arSS));
   sprintf(txDEC, "%c%02d%c%02d:%02d#", sDEC_tel, int(decDEG), 223, int(decMM), int(decSS));
-//
-//    mySerial.write("txAR");
-//    mySerial.write(txAR);
-//    
-//    mySerial.write("txDEC");
-//    mySerial.write(txDEC);
-//    
   
 }
