@@ -146,7 +146,7 @@ void read_sensors() {
   
   int enc1 = encoderValue1 / 1500;
   long encoder1_temp = encoderValue1 - (enc1 * 1500);
-  long map1 = enc1 * map(1500, 0, pulses_enc1, 0, 324000);
+  long map1 = enc1 * map(1500, 0, pulses_enc1, 0, 324000); //map(value, fromLow, fromHigh, toLow, toHigh)
   
   int enc2 = encoderValue2 / 1500;
   long encoder2_temp = encoderValue2 - (enc2 * 1500);
