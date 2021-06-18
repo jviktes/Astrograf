@@ -18,8 +18,8 @@ long TOTAL_PULSES_PER_ROUND_ENC_2 = 36000;
 // enter your latitude (example: North 40Âº33'20'') 
 //Longitude will be calculated through AR and H.
 int POSITION_LATITUDE_HH = 50;    // this means 40Âº North
-int POSITION_LATITUDE_MM = 45;
-int lPOSITION_LATITUDE_SS = 45;
+int POSITION_LATITUDE_MM = 46;
+int POSITION_LATITUDE_SS = 20;
 
 // enter Pole Star right ascention (AR: HH:MM:SS)
 int POLARKA_AR_HH = 2;    // this means 2 hours, 52 minutes and 16 seconds
@@ -27,7 +27,7 @@ int POLARKA_AR_MM = 58;
 int POLARKA_AR_SS = 30;
 
 // enter Pole Star hour angle (H: HH:MM:SS)
-int POLARKA_HOUR_CLOCK_HH = 15;
+int POLARKA_HOUR_CLOCK_HH = 8;
 int POLARKA_HOUR_CLOCK_MM = 33;
 int POLARKA_HOUR_CLOCK_SS = 24;
 
@@ -65,13 +65,14 @@ void setup()
   pinMode(ENC_1B, INPUT_PULLUP);
   pinMode(ENC_2A, INPUT_PULLUP);
   pinMode(ENC_2B, INPUT_PULLUP);
+
   attachInterrupt(digitalPinToInterrupt(ENC_1A), Encoder_Interrupt_1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_1B), Encoder_Interrupt_1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_2A), Encoder_Interrupt_2, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_2B), Encoder_Interrupt_2, CHANGE);
 
-  cos_phi = cos((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + lPOSITION_LATITUDE_SS) / 3600.0) * CONST_PI / 180.0);
-  sin_phi = sin((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + lPOSITION_LATITUDE_SS) / 3600.0) * CONST_PI / 180.0);
+  cos_phi = cos((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + POSITION_LATITUDE_SS) / 3600.0) * CONST_PI / 180.0);
+  sin_phi = sin((((POSITION_LATITUDE_HH * 3600) + (POSITION_LATITUDE_MM * 60) + POSITION_LATITUDE_SS) / 3600.0) * CONST_PI / 180.0);
 
   TSL = POLARKA_AR_HH * 3600 + POLARKA_AR_MM * 60 + POLARKA_AR_SS + POLARKA_HOUR_CLOCK_HH * 3600 + POLARKA_HOUR_CLOCK_MM * 60 + POLARKA_HOUR_CLOCK_SS;
   while (TSL >= 86400) TSL = TSL - 86400;
@@ -145,8 +146,8 @@ void communication()
 void read_sensors() {
 
     //fake:
-    encoderValue2= encoderValue2+200;
-    delay(1000);
+   // encoderValue2= encoderValue2+200;
+    //delay(1000);
 
   if (encoderValue2 >= TOTAL_PULSES_PER_ROUND_ENC_2 || encoderValue2 <= -TOTAL_PULSES_PER_ROUND_ENC_2) {
     encoderValue2 = 0;
@@ -167,6 +168,9 @@ void read_sensors() {
 
   if (Az_tel_s < 0) Az_tel_s = 1296000 + Az_tel_s;
   if (Az_tel_s >= 1296000) Az_tel_s = Az_tel_s - 1296000 ;
+
+  mySerial.write("Az_tel_s:"+Az_tel_s);
+  mySerial.write("Alt_tel_s:"+ Alt_tel_s);
 
 }
 
