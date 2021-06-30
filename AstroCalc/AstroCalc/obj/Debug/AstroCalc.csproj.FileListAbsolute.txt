@@ -1,0 +1,7 @@
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\bin\Debug\AstroCalc.exe.config
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\bin\Debug\AstroCalc.exe
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\bin\Debug\AstroCalc.pdb
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\obj\Debug\AstroCalc.csproj.AssemblyReference.cache
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\obj\Debug\AstroCalc.csproj.CoreCompileInputs.cache
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\obj\Debug\AstroCalc.exe
+E:\Dropbox\VisualStudio\AstroCalc\AstroCalc\obj\Debug\AstroCalc.pdb
