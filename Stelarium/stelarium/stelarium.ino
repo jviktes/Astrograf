@@ -19,17 +19,17 @@ long TOTAL_PULSES_PER_ROUND_ENC_2 = 36000;
 //Longitude will be calculated through AR and H.
 int POSITION_LATITUDE_HH = 50;    // this means 40Âº North
 int POSITION_LATITUDE_MM = 46;
-int POSITION_LATITUDE_SS = 20;
+int POSITION_LATITUDE_SS = 2;
 
 // enter Pole Star right ascention (AR: HH:MM:SS)
 int POLARKA_AR_HH = 2;    // this means 2 hours, 52 minutes and 16 seconds
 int POLARKA_AR_MM = 58;
-int POLARKA_AR_SS = 30;
+int POLARKA_AR_SS = 31;
 
 // enter Pole Star hour angle (H: HH:MM:SS)
-int POLARKA_HOUR_CLOCK_HH = 8;
-int POLARKA_HOUR_CLOCK_MM = 33;
-int POLARKA_HOUR_CLOCK_SS = 24;
+int POLARKA_HOUR_CLOCK_HH = 0;//8;
+int POLARKA_HOUR_CLOCK_MM = 0;//33;
+int POLARKA_HOUR_CLOCK_SS = 0;//24;
 
 SoftwareSerial mySerial(7, 8); // RX, TX - toto slouzi je pro vypis, co posilam na stelarium
 
@@ -91,7 +91,7 @@ void loop()
 {
   time_running_arduino = millis(); //cas od spusteni arduina
   if (t_ciclo_acumulado >= SEG_SIDERAL) {
-    TSL++;
+    TSL++; // toto je podivne
     t_ciclo_acumulado = t_ciclo_acumulado - SEG_SIDERAL;
     if (TSL >= 86400) {
       TSL = TSL - 86400;
@@ -156,8 +156,8 @@ void read_sensors() {
   //Alta teleskop:
   int _enc_1 = encoderValue1 / 1500;
   long encoder1_temp = encoderValue1 - (_enc_1 * 1500);
-  long map1 = _enc_1 * map(1500, 0, TOTAL_PULSES_PER_ROUND_ENC_1, 0, 324000); //map(value, fromLow, fromHigh, toLow, toHigh)
-  Alt_tel_s = map1 + map(encoder1_temp, 0, TOTAL_PULSES_PER_ROUND_ENC_1, 0, 324000);
+  long map1 = _enc_1 * map(1500, 0, TOTAL_PULSES_PER_ROUND_ENC_1, 0, 1296000); //map(value, fromLow, fromHigh, toLow, toHigh)
+  Alt_tel_s = map1 + map(encoder1_temp, 0, TOTAL_PULSES_PER_ROUND_ENC_1, 0, 1296000);
 
   //Azimut teleskop:
   int _enc_2 = encoderValue2 / 1500;
@@ -215,11 +215,11 @@ void AZ_to_EQ()
   cos_DEC = cos(delta_tel);
   DEC_tel_s = long((delta_tel * 180.0 / CONST_PI) * 3600.0);
 
-  while (DEC_tel_s >= 324000) {
-    DEC_tel_s = DEC_tel_s - 324000;
+  while (DEC_tel_s >= 1296000) {
+    DEC_tel_s = DEC_tel_s - 1296000;
   }
-  while (DEC_tel_s <= -324000) {
-    DEC_tel_s = DEC_tel_s + 324000;
+  while (DEC_tel_s <= -1296000) {
+    DEC_tel_s = DEC_tel_s + 1296000;
   }
 
   H_telRAD = acos((sin_h - (sin_phi * sin_DEC)) / (cos_phi * cos_DEC));
