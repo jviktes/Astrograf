@@ -39,10 +39,10 @@ namespace AstroCalc
             //    counter++;
             //    Thread.Sleep(1000);
             //}
-
+            GetAstroData();
             Console.ReadKey();
             mySerialPort.Close();
-            GetAstroData();
+            
         }
 
         private static void DataReceivedHandler(
@@ -146,45 +146,65 @@ namespace AstroCalc
 
         private static void GetAstroData()
         {
-            //vstupy:
-            double RA = 16.695; //TODO: prevod stupen na double
-            double DEC = 36.466667;
-            double localTime = 23.1666667;//TODO prevod UT na decimal a bude to vstupni parametr
+            //vstupy: pozice objektu na hvezdne obloze:
+            //Polárka:
+            double RA_deg = 37.963976; //TODO: prevod stupen na double
+            double DEC_deg = 89.264298;
 
-            double LAT = 52.5;
-            double LONG = -1.9166667;
+            //venuse:
+            RA_deg = 126.804315;
+            DEC_deg = 20.814702;
 
-            RA = RA * 15; // prevod na stupne
+            //GSM poloha = konstanty
+            //LBC:
+            double LAT = 50.7620031; 
+            double LONG = 15.0973567;
 
-            DateTime dateTime = new DateTime(1998, 8, 10, 23, 10, 0);
+            //tento prevod už je hotovy:
+            //RA_deg = RA_deg * 15; // prevod na stupne
+
+            DateTime localDateTime = DateTime.UtcNow;//new DateTime(1998, 8, 10, 23, 10, 0);
             DateTime J2000 = new DateTime(2000, 1, 1, 12, 0, 0);
-            TimeSpan timeSpan = dateTime - J2000;
+  
+            double localTime =  localDateTime.Hour + ((double)localDateTime.Minute / 60) + ((double)localDateTime.Second / 3600);
+            //double localTime = 23.1666667;//TODO prevod UT na decimal a bude to vstupni parametr
 
-            var re = dateTime.ToOADate() - J2000.ToOADate();
+            var re = localDateTime.ToOADate() - J2000.ToOADate();
+
             //Local siderical time:
+            double LST = 100.46 + 0.985647 * (localDateTime.ToOADate() - J2000.ToOADate()) + LONG + 15 * (localTime);
+            double correctedLST = LST;
+            while (correctedLST>360)
+            {
+                correctedLST = correctedLST - 360;
+            }
 
-            double LST = 100.46 + 0.985647 * (dateTime.ToOADate() - J2000.ToOADate()) + LONG + 15 * (localTime);
-            double HA = LST - RA;
+            LST = correctedLST; //asi OK po vydeleni 15 dostanu hodiny a ty odpovídají
+
+            double HA = LST - RA_deg;
             if (HA < 0) { HA = HA + 360; };
 
-            double ALT = Math.Sin(DEC * Math.PI / 180) * Math.Sin(LAT * Math.PI / 180) + Math.Cos(DEC * Math.PI / 180) * Math.Cos(LAT * Math.PI / 180) * Math.Cos(HA * Math.PI / 180);
+            double ALT = Math.Sin(degreeToRadian(DEC_deg)) * Math.Sin(degreeToRadian(LAT)) + Math.Cos(degreeToRadian(DEC_deg)) * Math.Cos(degreeToRadian(LAT)) * Math.Cos(degreeToRadian(HA));
             double ATL_rad = Math.Asin(ALT);
-            double ALT_Degree = ATL_rad * 180 / (Math.PI);
+            double ALT_Degree = radianToDegree(ATL_rad);
 
+            double AZIMUT = ((Math.Sin(degreeToRadian(DEC_deg))) - Math.Sin(degreeToRadian(ALT_Degree)) * Math.Sin(degreeToRadian(LAT))) / (Math.Cos(degreeToRadian(ALT_Degree)) * Math.Cos(degreeToRadian(LAT)));
 
-            double AZIMUT = ((Math.Sin(DEC * Math.PI / 180)) - Math.Sin(ALT_Degree * Math.PI / 180) * Math.Sin(LAT * Math.PI / 180)) / (Math.Cos(ALT_Degree * Math.PI / 180) * Math.Cos(LAT * Math.PI / 180));
             double AZIMUT_rad = Math.Acos(AZIMUT);
-            double AZIMUT_degree = AZIMUT_rad * 180 / (Math.PI);
+            double AZIMUT_degree = radianToDegree(AZIMUT_rad)-360; // toto je nějaký nouzový výpočet...
         }
 
-        public double degreeToRadian(double radianAngle)
+        //vraci stupně:
+        public static double degreeToRadian(double radianAngle)
         {
-            return radianAngle *180 / (Math.PI);
+            return radianAngle * (Math.PI / 180);
         }
 
-        private double radianToDegree (double degreeAngle)
+        //vraci radiany:
+        private static double radianToDegree (double degreeAngle)
         {
-            return degreeAngle * (Math.PI / 180);
+           
+            return degreeAngle * 180 / (Math.PI);
         }
 
     }
