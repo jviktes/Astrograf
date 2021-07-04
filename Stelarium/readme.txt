@@ -1,6 +1,7 @@
 Původní projekt:
 
 https://www.instructables.com/Control-Your-Telescope-Using-Stellarium-Arduino/
+!!! pozor tento projekt není zcela funkční !!!
 
 
 Data zachycená na mySerial = to co se posílá do Stelaria:
