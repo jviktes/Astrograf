@@ -1,3 +1,9 @@
 /Stelarium/.vs
 /Stelarium/stelarium/.vs
 /.merge_file_a01908
+/AstroCalc/AstroCalcTests/obj/Debug/*.pdb
+/AstroCalc/AstroCalcTests/bin/Debug
+/AstroCalc/AstroCalcTests/obj/Debug
+/AstroCalc/.vs/AstroCalc/v16/TestStore/0/testlog.manifest
+/AstroCalc/.vs/AstroCalc/v16/TestStore/0/000.testlog
+/AstroCalc/AstroCalc/obj/Debug/AstroCalc.exe
