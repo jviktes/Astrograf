@@ -240,8 +240,6 @@ namespace AstroCalc
         private double _azim_M;
         private double _azim_S;
 
-
-
         private double _ra_H;
         private double _ra_M;
         private double _ra_S;
@@ -250,7 +248,15 @@ namespace AstroCalc
         private double _dec_M;
         private double _dec_S;
 
+        private static double getMinutes(double _degree)
+        {
+            return Math.Floor((_degree - Math.Truncate(_degree)) * 60);
+        }
 
+        private static double getSeconds (double _degree)
+        {
+            return Math.Floor(((_degree - Math.Truncate(_degree)) * 60 - Math.Truncate((_degree - Math.Truncate(_degree)) * 60)) * 60);
+        }
 
         public double Alt_H
         {
@@ -260,13 +266,13 @@ namespace AstroCalc
 
         public double Alt_M
         {
-            get { return Math.Floor((Alt_H - Math.Truncate(Alt_H)) * 60); }
+            get { return getMinutes(this.ALT_Degree); }
             set { _alt_M = value; }
         }
         
         public double Alt_S
         {
-            get { return Math.Floor((Alt_M - Math.Truncate(Alt_M)) * 60); }
+            get { return getSeconds(this.ALT_Degree);}
             set { _alt_S = value; }
         }
 
@@ -280,13 +286,13 @@ namespace AstroCalc
 
         public double Azim_M
         {
-            get { return Math.Floor((Azim_H - Math.Truncate(Azim_H)) * 60); }
+            get { return getMinutes(this.AZIMUT_degree); }
             set { _azim_M = value; }
         }
 
         public double Azim_S
         {
-            get { return Math.Floor((Azim_M - Math.Truncate(Azim_M)) * 60); }
+            get { return getSeconds(this.AZIMUT_degree); }
             set { _azim_S = value; }
         }
 
@@ -303,13 +309,13 @@ namespace AstroCalc
 
         public double RA_M
         {
-            get { return Math.Floor((RA_H - Math.Truncate(RA_H)) * 60); }
+            get { return getMinutes(this.RA_Degree);}
             set { _ra_M = value; }
         }
 
         public double RA_S
         {
-            get { return Math.Floor((RA_M - Math.Truncate(RA_M)) * 60); }
+            get { return getSeconds(this.RA_Degree);}
             set { _ra_S = value; }
         }
 
@@ -321,13 +327,13 @@ namespace AstroCalc
 
         public double DEC_M
         {
-            get { return Math.Floor((DEC_H - Math.Truncate(DEC_H)) * 60); }
+            get { return getMinutes(this.DEC_degree); }
             set { _dec_M = value; }
         }
 
         public double DEC_S
         {
-            get { return Math.Floor((DEC_M - Math.Truncate(DEC_M)) * 60); }
+            get { return getSeconds(this.DEC_degree);}
             set { _dec_S = value; }
         }
 
