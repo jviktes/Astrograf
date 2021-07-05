@@ -9,6 +9,12 @@ namespace AstroCalc
 {
     public class Program
     {
+
+        //GSM poloha = konstanty
+        //LBC:
+        public static double LAT_degree = 50.7620031;
+        public static double LONG_degree = 15.0973567;
+
         static void Main(string[] args)
         {
 
@@ -31,15 +37,24 @@ namespace AstroCalc
 
             Console.WriteLine();
 
-            //smycka pro posílání dat, každou sekundu:
-            //int counter = 0;
-            //while (true)
-            //{
-            //    mySerialPort.Write($"Smycka:{counter}");
-            //    counter++;
-            //    Thread.Sleep(1000);
-            //}
-            GetAstroData();
+            //vstupy: pozice objektu na hvezdne obloze:
+            //Polárka:
+            double OBJECT_RA_deg = 37.963976; //TODO: prevod stupen na double
+            double OBJECT_DEC_deg = 89.264298;
+
+            //Venuse:
+            OBJECT_RA_deg = 126.804315;
+            OBJECT_DEC_deg = 20.814702;
+
+            //Hvezda CAS Schedir:
+            OBJECT_RA_deg = 10.127361;
+            OBJECT_DEC_deg = 56.537339;
+
+            CoordinatesObject _object =GetAstroData(OBJECT_RA_deg, OBJECT_DEC_deg);
+
+            Console.Write($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
+            Console.Write($"Souradnice objektu jsou Azim= {_object.Alt_H}:{_object.Alt_M}:{_object.Azim_S}");
+
             Console.ReadKey();
             mySerialPort.Close();
             
@@ -144,24 +159,9 @@ namespace AstroCalc
 
         }
 
-        private static void GetAstroData()
+        private static CoordinatesObject GetAstroData(double _OBJECT_RA_deg, double _OBJECT_DEC_deg)
         {
-            //vstupy: pozice objektu na hvezdne obloze:
-            //Polárka:
-            double RA_deg = 37.963976; //TODO: prevod stupen na double
-            double DEC_deg = 89.264298;
 
-            //venuse:
-            RA_deg = 126.804315;
-            DEC_deg = 20.814702;
-
-            //GSM poloha = konstanty
-            //LBC:
-            double LAT = 50.7620031; 
-            double LONG = 15.0973567;
-
-            //tento prevod už je hotovy:
-            //RA_deg = RA_deg * 15; // prevod na stupne
 
             DateTime localDateTime = DateTime.UtcNow;//new DateTime(1998, 8, 10, 23, 10, 0);
             DateTime J2000 = new DateTime(2000, 1, 1, 12, 0, 0);
@@ -172,7 +172,7 @@ namespace AstroCalc
             var re = localDateTime.ToOADate() - J2000.ToOADate();
 
             //Local siderical time:
-            double LST = 100.46 + 0.985647 * (localDateTime.ToOADate() - J2000.ToOADate()) + LONG + 15 * (localTime);
+            double LST = 100.46 + 0.985647 * (localDateTime.ToOADate() - J2000.ToOADate()) + LONG_degree + 15 * (localTime);
             double correctedLST = LST;
             while (correctedLST>360)
             {
@@ -180,32 +180,157 @@ namespace AstroCalc
             }
 
             LST = correctedLST; //asi OK po vydeleni 15 dostanu hodiny a ty odpovídají
+            double LST_H = LST / 15;
+            double LST_M = (LST_H - Math.Truncate(LST_H))*60;
+            double LST_S = (LST_M - Math.Truncate(LST_M))*60;
 
-            double HA = LST - RA_deg;
+
+            double HA = LST - _OBJECT_RA_deg;
             if (HA < 0) { HA = HA + 360; };
 
-            double ALT = Math.Sin(degreeToRadian(DEC_deg)) * Math.Sin(degreeToRadian(LAT)) + Math.Cos(degreeToRadian(DEC_deg)) * Math.Cos(degreeToRadian(LAT)) * Math.Cos(degreeToRadian(HA));
+            double ALT = Math.Sin(degreeToRadian(_OBJECT_DEC_deg)) * Math.Sin(degreeToRadian(LAT_degree)) + Math.Cos(degreeToRadian(_OBJECT_DEC_deg)) * Math.Cos(degreeToRadian(LAT_degree)) * Math.Cos(degreeToRadian(HA));
             double ATL_rad = Math.Asin(ALT);
             double ALT_Degree = radianToDegree(ATL_rad);
 
-            double AZIMUT = ((Math.Sin(degreeToRadian(DEC_deg))) - Math.Sin(degreeToRadian(ALT_Degree)) * Math.Sin(degreeToRadian(LAT))) / (Math.Cos(degreeToRadian(ALT_Degree)) * Math.Cos(degreeToRadian(LAT)));
+            double AZIMUT = ((Math.Sin(degreeToRadian(_OBJECT_DEC_deg))) - Math.Sin(degreeToRadian(ALT_Degree)) * Math.Sin(degreeToRadian(LAT_degree))) / (Math.Cos(degreeToRadian(ALT_Degree)) * Math.Cos(degreeToRadian(LAT_degree)));
 
             double AZIMUT_rad = Math.Acos(AZIMUT);
-            double AZIMUT_degree = radianToDegree(AZIMUT_rad)-360; // toto je nějaký nouzový výpočet...
-        }
+            double AZIMUT_degree = radianToDegree(AZIMUT_rad); // nějaká chyba: má být 307st, ale je to 53st
 
-        //vraci stupně:
-        public static double degreeToRadian(double radianAngle)
-        {
-            return radianAngle * (Math.PI / 180);
+            if (Math.Sin(degreeToRadian(HA)) > 0)
+            {
+                AZIMUT_degree = 360-AZIMUT_degree;
+            }
+            CoordinatesObject coordinatesObject = new CoordinatesObject();
+            coordinatesObject.ALT_Degree = ALT_Degree;
+            coordinatesObject.AZIMUT_degree = AZIMUT_degree;
+            coordinatesObject.RA_Degree = _OBJECT_RA_deg;
+            coordinatesObject.DEC_degree = _OBJECT_DEC_deg;
+            return coordinatesObject;
         }
 
         //vraci radiany:
-        private static double radianToDegree (double degreeAngle)
+        public static double degreeToRadian(double degreeAngle)
+        {
+            return degreeAngle * (Math.PI / 180);
+        }
+
+        //vraci stupně:
+        public static double radianToDegree (double degreeRadians)
         {
            
-            return degreeAngle * 180 / (Math.PI);
+            return degreeRadians * 180 / (Math.PI);
         }
+
+    }
+
+    public class CoordinatesObject
+    {
+        public double ALT_Degree;
+        public double AZIMUT_degree;
+
+        public double RA_Degree;
+        public double DEC_degree;
+
+        private double _alt_H;
+        private double _alt_M;
+        private double _alt_S;
+
+        private double _azim_H;
+        private double _azim_M;
+        private double _azim_S;
+
+
+
+        private double _ra_H;
+        private double _ra_M;
+        private double _ra_S;
+
+        private double _dec_H;
+        private double _dec_M;
+        private double _dec_S;
+
+
+
+        public double Alt_H
+        {
+            get { return Math.Floor(this.ALT_Degree);}
+            set { _alt_H = value; }
+        }
+
+        public double Alt_M
+        {
+            get { return Math.Floor((Alt_H - Math.Truncate(Alt_H)) * 60); }
+            set { _alt_M = value; }
+        }
+        
+        public double Alt_S
+        {
+            get { return Math.Floor((Alt_M - Math.Truncate(Alt_M)) * 60); }
+            set { _alt_S = value; }
+        }
+
+
+
+        public double Azim_H
+        {
+            get { return Math.Floor(this.AZIMUT_degree); }
+            set { _azim_H = value; }
+        }
+
+        public double Azim_M
+        {
+            get { return Math.Floor((Azim_H - Math.Truncate(Azim_H)) * 60); }
+            set { _azim_M = value; }
+        }
+
+        public double Azim_S
+        {
+            get { return Math.Floor((Azim_M - Math.Truncate(Azim_M)) * 60); }
+            set { _azim_S = value; }
+        }
+
+
+
+        ////
+        ///
+
+        public double RA_H
+        {
+            get { return Math.Floor(this.RA_Degree); }
+            set { _ra_H = value; }
+        }
+
+        public double RA_M
+        {
+            get { return Math.Floor((RA_H - Math.Truncate(RA_H)) * 60); }
+            set { _ra_M = value; }
+        }
+
+        public double RA_S
+        {
+            get { return Math.Floor((RA_M - Math.Truncate(RA_M)) * 60); }
+            set { _ra_S = value; }
+        }
+
+        public double DEC_H
+        {
+            get { return Math.Floor(this.DEC_degree); }
+            set { _dec_H = value; }
+        }
+
+        public double DEC_M
+        {
+            get { return Math.Floor((DEC_H - Math.Truncate(DEC_H)) * 60); }
+            set { _dec_M = value; }
+        }
+
+        public double DEC_S
+        {
+            get { return Math.Floor((DEC_M - Math.Truncate(DEC_M)) * 60); }
+            set { _dec_S = value; }
+        }
+
 
     }
 }
