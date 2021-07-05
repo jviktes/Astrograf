@@ -13,9 +13,12 @@ namespace AstroCalc
 
         //GSM poloha = konstanty
         //LBC:
-        public static double LAT_degree = 50.7751814;
-        public static double LONG_degree = 14.9560950;
-     
+        //public static double LAT_degree = 50.7751814;
+        //public static double LONG_degree = 14.9560950;
+
+        public static double LAT_degree = 52.5;
+        public static double LONG_degree = -1.9166667;
+
         static void Main(string[] args)
         {
 
@@ -51,11 +54,15 @@ namespace AstroCalc
             OBJECT_RA_deg = 10.127361;
             OBJECT_DEC_deg = 56.537339;
 
+            //testovaci objekt Anglican:
+            OBJECT_RA_deg = 16.695*15;
+            OBJECT_DEC_deg = 36.466667;
+
             CoordinatesObject _object = new CoordinatesObject(OBJECT_RA_deg, OBJECT_DEC_deg, LAT_degree, LONG_degree);
 
 
             while (!(Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)) {
-                DateTime localDateTime = DateTime.UtcNow;
+                DateTime localDateTime = new DateTime(1998,8,10,23,10,0) ;//DateTime.UtcNow;
                 _object.GetCurrentAstroData(localDateTime);
                 Console.WriteLine(DateTime.Now);
                 Console.WriteLine($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
@@ -155,6 +162,8 @@ namespace AstroCalc
 
     public class CoordinatesObject
     {
+
+        #region Varible and properties
         public double ALT_Degree;
         public double AZIMUT_degree;
 
@@ -196,45 +205,16 @@ namespace AstroCalc
             set { _lst_M = value; }
         }
 
+
         public double LST_S
         {
             get { return getSeconds(this.LST); }
             set { _lst_S = value; }
         }
 
-
-        private static double getHoures(double _degree)
-        {
-            return Math.Floor(_degree);
-        }
-
-        private static double getMinutes(double _degree)
-        {
-            return Math.Floor((_degree - Math.Truncate(_degree)) * 60);
-        }
-
-        private static double getSeconds (double _degree)
-        {
-            return Math.Floor(((_degree - Math.Truncate(_degree)) * 60 - Math.Truncate((_degree - Math.Truncate(_degree)) * 60)) * 60);
-        }
-
-        //vraci radiany:
-        public static double degreeToRadian(double degreeAngle)
-        {
-            return degreeAngle * (Math.PI / 180);
-        }
-
-        //vraci stupně:
-        public static double radianToDegree(double degreeRadians)
-        {
-
-            return degreeRadians * 180 / (Math.PI);
-        }
-
-
         public double Alt_H
         {
-            get { return getHoures(this.ALT_Degree);}
+            get { return getHoures(this.ALT_Degree); }
             set { _alt_H = value; }
         }
 
@@ -243,10 +223,10 @@ namespace AstroCalc
             get { return getMinutes(this.ALT_Degree); }
             set { _alt_M = value; }
         }
-        
+
         public double Alt_S
         {
-            get { return getSeconds(this.ALT_Degree);}
+            get { return getSeconds(this.ALT_Degree); }
             set { _alt_S = value; }
         }
 
@@ -276,13 +256,13 @@ namespace AstroCalc
 
         public double RA_M
         {
-            get { return getMinutes(this.RA_Degree);}
+            get { return getMinutes(this.RA_Degree); }
             set { _ra_M = value; }
         }
 
         public double RA_S
         {
-            get { return getSeconds(this.RA_Degree);}
+            get { return getSeconds(this.RA_Degree); }
             set { _ra_S = value; }
         }
 
@@ -300,7 +280,7 @@ namespace AstroCalc
 
         public double DEC_S
         {
-            get { return getSeconds(this.DEC_degree);}
+            get { return getSeconds(this.DEC_degree); }
             set { _dec_S = value; }
         }
 
@@ -310,7 +290,8 @@ namespace AstroCalc
 
 
         public double LAT_degree;
-        public double LONG_degree;
+        public double LONG_degree; 
+        #endregion
 
         public CoordinatesObject(double _OBJECT_RA_deg, double _OBJECT_DEC_deg, double _LAT_degree, double _LONG_degree)
         {
@@ -333,6 +314,11 @@ namespace AstroCalc
             while (correctedLST > 360)
             {
                 correctedLST = correctedLST - 360;
+            }
+
+            if (correctedLST<0)
+            {
+                correctedLST=correctedLST + 360;
             }
 
             LST = correctedLST; //asi OK po vydeleni 15 dostanu hodiny a ty odpovídají
@@ -387,5 +373,35 @@ namespace AstroCalc
             //return coordinatesObject;
         }
 
+
+
+
+        private static double getHoures(double _degree)
+        {
+            return Math.Floor(_degree);
+        }
+
+        private static double getMinutes(double _degree)
+        {
+            return Math.Floor((_degree - Math.Truncate(_degree)) * 60);
+        }
+
+        private static double getSeconds(double _degree)
+        {
+            return Math.Floor(((_degree - Math.Truncate(_degree)) * 60 - Math.Truncate((_degree - Math.Truncate(_degree)) * 60)) * 60);
+        }
+
+        //vraci radiany:
+        public static double degreeToRadian(double degreeAngle)
+        {
+            return degreeAngle * (Math.PI / 180);
+        }
+
+        //vraci stupně:
+        public static double radianToDegree(double degreeRadians)
+        {
+
+            return degreeRadians * 180 / (Math.PI);
+        }
     }
 }
