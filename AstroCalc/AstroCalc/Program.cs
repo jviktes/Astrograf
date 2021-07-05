@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AstroCalc
@@ -12,9 +13,9 @@ namespace AstroCalc
 
         //GSM poloha = konstanty
         //LBC:
-        public static double LAT_degree = 50.7620031;
-        public static double LONG_degree = 15.0973567;
-
+        public static double LAT_degree = 50.7751814;
+        public static double LONG_degree = 14.9560950;
+     
         static void Main(string[] args)
         {
 
@@ -39,7 +40,7 @@ namespace AstroCalc
 
             //vstupy: pozice objektu na hvezdne obloze:
             //Polárka:
-            double OBJECT_RA_deg = 37.963976; //TODO: prevod stupen na double
+            double OBJECT_RA_deg = 37.963976;
             double OBJECT_DEC_deg = 89.264298;
 
             //Venuse:
@@ -50,10 +51,18 @@ namespace AstroCalc
             OBJECT_RA_deg = 10.127361;
             OBJECT_DEC_deg = 56.537339;
 
-            CoordinatesObject _object =GetAstroData(OBJECT_RA_deg, OBJECT_DEC_deg);
+            CoordinatesObject _object = new CoordinatesObject(OBJECT_RA_deg, OBJECT_DEC_deg, LAT_degree, LONG_degree);
 
-            Console.Write($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
-            Console.Write($"Souradnice objektu jsou Azim= {_object.Alt_H}:{_object.Alt_M}:{_object.Azim_S}");
+
+            while (!(Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)) {
+                DateTime localDateTime = DateTime.UtcNow;
+                _object.GetCurrentAstroData(localDateTime);
+                Console.WriteLine(DateTime.Now);
+                Console.WriteLine($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
+                Console.WriteLine($"Souradnice objektu jsou Azim= {_object.Azim_H}:{_object.Azim_M}:{_object.Azim_S}");
+                Thread.Sleep(5000);
+                
+            }
 
             Console.ReadKey();
             mySerialPort.Close();
@@ -88,20 +97,20 @@ namespace AstroCalc
             //Depending upon the current precision setting for the telescope. 
             //AR03: 36:55#txDEC+86?08:57#
 
-            string _ra = "02:30:00#";
-            string _dec = "+86"+(char)223+"25:57#";
+            string _ra_Telecope = "02:30:00#";
+            string _dec_Telescope = "+86"+(char)223+"25:57#";
 
             if (res.Contains("#:GR#"))
             {
-                sp.Write(_ra);
-                Console.WriteLine(_ra);
+                sp.Write(_ra_Telecope);
+                Console.WriteLine(_ra_Telecope);
                 //sp.Write(Environment.NewLine);
             }
 
             if (res.Contains(":GD#"))
             {
-                Console.WriteLine(_dec);
-                sp.Write(_dec);
+                Console.WriteLine(_dec_Telescope);
+                sp.Write(_dec_Telescope);
             }
 
             if (res.Contains("Sr"))
@@ -141,86 +150,6 @@ namespace AstroCalc
             //callmyfunction(indata);
         }
 
-        private static void HandleSerialData(byte[] respBuffer)
-        {
-            string res = Encoding.UTF8.GetString(respBuffer);
-
-
-            if (res.Contains("#:GR#")) {
-                Console.Write("+86:00:00#");
-            }
-            if (res.Contains(":GD#"))
-            {
-                Console.Write("00:00:00");
-            }
-                //  sprintf(_AR_Formated_Stelarium, "%02d:%02d:%02d#", int(arHH), int(arMM), int(arSS));
-                //sprintf(_DEC_Formated_Stelarium, "%c%02d%c%02d:%02d#", sDEC_tel, int(decDEG), 223, int(decMM), int(decSS));
-                // Console.Write(res);
-
-        }
-
-        private static CoordinatesObject GetAstroData(double _OBJECT_RA_deg, double _OBJECT_DEC_deg)
-        {
-
-
-            DateTime localDateTime = DateTime.UtcNow;//new DateTime(1998, 8, 10, 23, 10, 0);
-            DateTime J2000 = new DateTime(2000, 1, 1, 12, 0, 0);
-  
-            double localTime =  localDateTime.Hour + ((double)localDateTime.Minute / 60) + ((double)localDateTime.Second / 3600);
-            //double localTime = 23.1666667;//TODO prevod UT na decimal a bude to vstupni parametr
-
-            var re = localDateTime.ToOADate() - J2000.ToOADate();
-
-            //Local siderical time:
-            double LST = 100.46 + 0.985647 * (localDateTime.ToOADate() - J2000.ToOADate()) + LONG_degree + 15 * (localTime);
-            double correctedLST = LST;
-            while (correctedLST>360)
-            {
-                correctedLST = correctedLST - 360;
-            }
-
-            LST = correctedLST; //asi OK po vydeleni 15 dostanu hodiny a ty odpovídají
-            double LST_H = LST / 15;
-            double LST_M = (LST_H - Math.Truncate(LST_H))*60;
-            double LST_S = (LST_M - Math.Truncate(LST_M))*60;
-
-
-            double HA = LST - _OBJECT_RA_deg;
-            if (HA < 0) { HA = HA + 360; };
-
-            double ALT = Math.Sin(degreeToRadian(_OBJECT_DEC_deg)) * Math.Sin(degreeToRadian(LAT_degree)) + Math.Cos(degreeToRadian(_OBJECT_DEC_deg)) * Math.Cos(degreeToRadian(LAT_degree)) * Math.Cos(degreeToRadian(HA));
-            double ATL_rad = Math.Asin(ALT);
-            double ALT_Degree = radianToDegree(ATL_rad);
-
-            double AZIMUT = ((Math.Sin(degreeToRadian(_OBJECT_DEC_deg))) - Math.Sin(degreeToRadian(ALT_Degree)) * Math.Sin(degreeToRadian(LAT_degree))) / (Math.Cos(degreeToRadian(ALT_Degree)) * Math.Cos(degreeToRadian(LAT_degree)));
-
-            double AZIMUT_rad = Math.Acos(AZIMUT);
-            double AZIMUT_degree = radianToDegree(AZIMUT_rad); // nějaká chyba: má být 307st, ale je to 53st
-
-            if (Math.Sin(degreeToRadian(HA)) > 0)
-            {
-                AZIMUT_degree = 360-AZIMUT_degree;
-            }
-            CoordinatesObject coordinatesObject = new CoordinatesObject();
-            coordinatesObject.ALT_Degree = ALT_Degree;
-            coordinatesObject.AZIMUT_degree = AZIMUT_degree;
-            coordinatesObject.RA_Degree = _OBJECT_RA_deg;
-            coordinatesObject.DEC_degree = _OBJECT_DEC_deg;
-            return coordinatesObject;
-        }
-
-        //vraci radiany:
-        public static double degreeToRadian(double degreeAngle)
-        {
-            return degreeAngle * (Math.PI / 180);
-        }
-
-        //vraci stupně:
-        public static double radianToDegree (double degreeRadians)
-        {
-           
-            return degreeRadians * 180 / (Math.PI);
-        }
 
     }
 
@@ -231,6 +160,8 @@ namespace AstroCalc
 
         public double RA_Degree;
         public double DEC_degree;
+
+        public double LST;
 
         private double _alt_H;
         private double _alt_M;
@@ -248,6 +179,35 @@ namespace AstroCalc
         private double _dec_M;
         private double _dec_S;
 
+
+        private double _lst_H;
+        private double _lst_M;
+        private double _lst_S;
+
+        public double LST_H
+        {
+            get { return getHoures(this.LST); }
+            set { _lst_H = value; }
+        }
+
+        public double LST_M
+        {
+            get { return getMinutes(this.LST); }
+            set { _lst_M = value; }
+        }
+
+        public double LST_S
+        {
+            get { return getSeconds(this.LST); }
+            set { _lst_S = value; }
+        }
+
+
+        private static double getHoures(double _degree)
+        {
+            return Math.Floor(_degree);
+        }
+
         private static double getMinutes(double _degree)
         {
             return Math.Floor((_degree - Math.Truncate(_degree)) * 60);
@@ -258,9 +218,23 @@ namespace AstroCalc
             return Math.Floor(((_degree - Math.Truncate(_degree)) * 60 - Math.Truncate((_degree - Math.Truncate(_degree)) * 60)) * 60);
         }
 
+        //vraci radiany:
+        public static double degreeToRadian(double degreeAngle)
+        {
+            return degreeAngle * (Math.PI / 180);
+        }
+
+        //vraci stupně:
+        public static double radianToDegree(double degreeRadians)
+        {
+
+            return degreeRadians * 180 / (Math.PI);
+        }
+
+
         public double Alt_H
         {
-            get { return Math.Floor(this.ALT_Degree);}
+            get { return getHoures(this.ALT_Degree);}
             set { _alt_H = value; }
         }
 
@@ -276,11 +250,9 @@ namespace AstroCalc
             set { _alt_S = value; }
         }
 
-
-
         public double Azim_H
         {
-            get { return Math.Floor(this.AZIMUT_degree); }
+            get { return getHoures(this.AZIMUT_degree); }
             set { _azim_H = value; }
         }
 
@@ -296,14 +268,9 @@ namespace AstroCalc
             set { _azim_S = value; }
         }
 
-
-
-        ////
-        ///
-
         public double RA_H
         {
-            get { return Math.Floor(this.RA_Degree); }
+            get { return getHoures(this.RA_Degree); }
             set { _ra_H = value; }
         }
 
@@ -321,7 +288,7 @@ namespace AstroCalc
 
         public double DEC_H
         {
-            get { return Math.Floor(this.DEC_degree); }
+            get { return getHoures(this.DEC_degree); }
             set { _dec_H = value; }
         }
 
@@ -337,6 +304,88 @@ namespace AstroCalc
             set { _dec_S = value; }
         }
 
+
+        public double OBJECT_RA_deg { get; set; }
+        public double OBJECT_DEC_deg { get; set; }
+
+
+        public double LAT_degree;
+        public double LONG_degree;
+
+        public CoordinatesObject(double _OBJECT_RA_deg, double _OBJECT_DEC_deg, double _LAT_degree, double _LONG_degree)
+        {
+            this.OBJECT_RA_deg = _OBJECT_RA_deg;
+            this.OBJECT_DEC_deg = _OBJECT_DEC_deg;
+            this.LAT_degree = _LAT_degree;
+            this.LONG_degree = _LONG_degree;
+
+        }
+
+        public static double getLST(DateTime localDateTime, double _LONG_degree)
+        {
+            DateTime J2000 = new DateTime(2000, 1, 1, 12, 0, 0);
+
+            double localTime = localDateTime.Hour + ((double)localDateTime.Minute / 60) + ((double)localDateTime.Second / 3600);
+
+            //Local siderical time:
+            double LST = 100.46 + 0.985647 * (localDateTime.ToOADate() - J2000.ToOADate()) + _LONG_degree + 15 * (localTime);
+            double correctedLST = LST;
+            while (correctedLST > 360)
+            {
+                correctedLST = correctedLST - 360;
+            }
+
+            LST = correctedLST; //asi OK po vydeleni 15 dostanu hodiny a ty odpovídají
+            return LST;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_OBJECT_RA_deg"></param>
+        /// <param name="_OBJECT_DEC_deg"></param>
+        /// <param name="localDateTime"></param>
+        /// <returns></returns>
+        public void GetCurrentAstroData(DateTime localDateTime)
+        {
+
+            double _LST = CoordinatesObject.getLST(localDateTime, LONG_degree);
+
+            double LST_H = _LST / 15;
+            double LST_M = (LST_H - Math.Truncate(LST_H)) * 60;
+            double LST_S = (LST_M - Math.Truncate(LST_M)) * 60;
+
+            double HA = _LST - this.OBJECT_RA_deg;
+            if (HA < 0) { HA = HA + 360; };
+
+            double ALT = Math.Sin(degreeToRadian(this.OBJECT_DEC_deg)) * Math.Sin(degreeToRadian(LAT_degree)) + Math.Cos(degreeToRadian(this.OBJECT_DEC_deg)) * Math.Cos(degreeToRadian(LAT_degree)) * Math.Cos(degreeToRadian(HA));
+            double ATL_rad = Math.Asin(ALT);
+            double ALT_Degree = radianToDegree(ATL_rad);
+
+            double AZIMUT = ((Math.Sin(degreeToRadian(OBJECT_DEC_deg))) - Math.Sin(degreeToRadian(ALT_Degree)) * Math.Sin(degreeToRadian(LAT_degree))) / (Math.Cos(degreeToRadian(ALT_Degree)) * Math.Cos(degreeToRadian(LAT_degree)));
+
+            double AZIMUT_rad = Math.Acos(AZIMUT);
+            double AZIMUT_degree = radianToDegree(AZIMUT_rad);
+
+            if (Math.Sin(degreeToRadian(HA)) > 0)
+            {
+                AZIMUT_degree = 360 - AZIMUT_degree;
+            }
+
+            //CoordinatesObject coordinatesObject = new CoordinatesObject();
+            this.ALT_Degree = ALT_Degree;
+            this.AZIMUT_degree = AZIMUT_degree;
+
+            this.RA_Degree = HA/15;
+
+            this.DEC_degree = OBJECT_DEC_deg;
+            this.LST = _LST;
+            this.LST_H = getHoures(_LST/15);
+            this.LST_M = getMinutes(_LST/15);
+            this.LST_S = getSeconds(_LST/15);
+
+            //return coordinatesObject;
+        }
 
     }
 }
