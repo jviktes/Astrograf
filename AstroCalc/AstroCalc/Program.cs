@@ -16,15 +16,8 @@ namespace AstroCalc
         public static double LAT_degree = 50.7751814;
         public static double LONG_degree = 15.005;
 
-        //Anglie test:
-        //public static double LAT_degree = 52.5;
-        //public static double LONG_degree = -1.9166667;
-
         static void Main(string[] args)
         {
-            //Anglie test:
-            //LAT_degree = 50 + (double)(46 / 60);
-            //LONG_degree = 15 + (double)(3 / 60);
 
             Console.WriteLine("Hello World!");
             SerialPort mySerialPort = new SerialPort("COM1");
@@ -58,15 +51,7 @@ namespace AstroCalc
             double OBJECT_RA_deg = 10.127361*15;
             double OBJECT_DEC_deg = 56.537339;
 
-            OBJECT_RA_deg = (0 + (double)(40.000/60))*15; //16.695*15;
-            OBJECT_DEC_deg = 56+(double)(32.0000/60);//36.466667;
-
-            //testovaci objekt Anglican:
-            //OBJECT_RA_deg = (16 + (double)(20.000/60))*15; //16.695*15;
-            //OBJECT_DEC_deg = 56+(double)(39.0000/60);//36.466667;
-
             CoordinatesObject _object = new CoordinatesObject(OBJECT_RA_deg, OBJECT_DEC_deg, LAT_degree, LONG_degree);
-
 
             while (!(Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)) {
                 //cas je v UTC a se započtením letního času --> lokální čas je 20:35, ale nastavuju 18:35
