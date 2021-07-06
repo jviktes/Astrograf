@@ -13,14 +13,18 @@ namespace AstroCalc
 
         //GSM poloha = konstanty
         //LBC:
-        //public static double LAT_degree = 50.7751814;
-        //public static double LONG_degree = 14.9560950;
+        public static double LAT_degree = 50.7751814;
+        public static double LONG_degree = 15.005;
 
-        public static double LAT_degree = 52.5;
-        public static double LONG_degree = -1.9166667;
+        //Anglie test:
+        //public static double LAT_degree = 52.5;
+        //public static double LONG_degree = -1.9166667;
 
         static void Main(string[] args)
         {
+            //Anglie test:
+            //LAT_degree = 50 + (double)(46 / 60);
+            //LONG_degree = 15 + (double)(3 / 60);
 
             Console.WriteLine("Hello World!");
             SerialPort mySerialPort = new SerialPort("COM1");
@@ -43,26 +47,31 @@ namespace AstroCalc
 
             //vstupy: pozice objektu na hvezdne obloze:
             //Polárka:
-            double OBJECT_RA_deg = 37.963976;
-            double OBJECT_DEC_deg = 89.264298;
+            //double OBJECT_RA_deg = 37.963976;
+            //double OBJECT_DEC_deg = 89.264298;
 
             //Venuse:
-            OBJECT_RA_deg = 126.804315;
-            OBJECT_DEC_deg = 20.814702;
+            //double OBJECT_RA_deg = 126.804315;
+            //double OBJECT_DEC_deg = 20.814702;
 
             //Hvezda CAS Schedir:
-            OBJECT_RA_deg = 10.127361;
-            OBJECT_DEC_deg = 56.537339;
+            double OBJECT_RA_deg = 10.127361*15;
+            double OBJECT_DEC_deg = 56.537339;
+
+            OBJECT_RA_deg = (0 + (double)(40.000/60))*15; //16.695*15;
+            OBJECT_DEC_deg = 56+(double)(32.0000/60);//36.466667;
 
             //testovaci objekt Anglican:
-            OBJECT_RA_deg = 16.695*15;
-            OBJECT_DEC_deg = 36.466667;
+            //OBJECT_RA_deg = (16 + (double)(20.000/60))*15; //16.695*15;
+            //OBJECT_DEC_deg = 56+(double)(39.0000/60);//36.466667;
 
             CoordinatesObject _object = new CoordinatesObject(OBJECT_RA_deg, OBJECT_DEC_deg, LAT_degree, LONG_degree);
 
 
             while (!(Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)) {
-                DateTime localDateTime = new DateTime(1998,8,10,23,10,0) ;//DateTime.UtcNow;
+                //cas je v UTC a se započtením letního času --> lokální čas je 20:35, ale nastavuju 18:35
+                //ve Stellariu: mám čas 19:35, bez daylight saving a +1UTC
+                DateTime localDateTime = new DateTime(2021, 7, 5, 18, 35, 0);//DateTime.UtcNow;//new DateTime(1998,8,10,23,10,0) ;//DateTime.UtcNow;
                 _object.GetCurrentAstroData(localDateTime);
                 Console.WriteLine(DateTime.Now);
                 Console.WriteLine($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
