@@ -1,3 +1,5 @@
+toto je prvni výkop a hrání si s motorkem
+
 Kontroler - návody:
 
 https://navody.dratek.cz/navody-k-produktum/arduino-cnc-shield-driver-a4988-motor-28byj-48.html
