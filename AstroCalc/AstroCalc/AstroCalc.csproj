@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ArduinoSerialLink\ArduinoSerialLink.csproj">
+      <Project>{f7f4156c-3a7b-4677-9973-c3e2192df01f}</Project>
+      <Name>ArduinoSerialLink</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

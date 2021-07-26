@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArduinoSerialLink;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -37,6 +38,12 @@ namespace AstroCalc
             mySerialPort.Write("Setup OK");
 
             Console.WriteLine();
+
+
+            ArduinoWork arduinoWork = new ArduinoWork("COM3");
+            Thread thread1 = new Thread(ArduinoWork.LoadingData);
+            thread1.Start();
+
 
             //vstupy: pozice objektu na hvezdne obloze:
             //Polárka:
@@ -99,7 +106,15 @@ namespace AstroCalc
             //AR03: 36:55#txDEC+86?08:57#
 
             //simulace nějakého natočení teleskopu v nějaký čas:
+            String _valueFromArduino = ArduinoWork.ActualValueFromArduino;
+            Double.TryParse(_valueFromArduino, out Double arduinoValue);
+
             string _ra_Telecope = "06:38:00#";//toto se mění --> toto bych měl načítat z arduina
+
+            arduinoValue = arduinoValue / 30;
+            
+            _ra_Telecope = $"{CoordinatesObject.getHoures(arduinoValue).ToString("00")}:{CoordinatesObject.getMinutes(arduinoValue).ToString("00")}:{CoordinatesObject.getSeconds(arduinoValue).ToString("00")}#";
+
             string _dec_Telescope = "+54"+(char)223+"55:18#";//toto by mělo být stejné 
 
             if (res.Contains("#:GR#"))
@@ -371,17 +386,17 @@ namespace AstroCalc
 
 
 
-        private static double getHoures(double _degree)
+        public static double getHoures(double _degree)
         {
             return Math.Floor(_degree);
         }
 
-        private static double getMinutes(double _degree)
+        public static double getMinutes(double _degree)
         {
             return Math.Floor((_degree - Math.Truncate(_degree)) * 60);
         }
 
-        private static double getSeconds(double _degree)
+        public static double getSeconds(double _degree)
         {
             return Math.Floor(((_degree - Math.Truncate(_degree)) * 60 - Math.Truncate((_degree - Math.Truncate(_degree)) * 60)) * 60);
         }
