@@ -61,7 +61,7 @@ namespace AstroCalc
                 Console.WriteLine(DateTime.Now);
                 Console.WriteLine($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
                 Console.WriteLine($"Souradnice objektu jsou Azim= {_object.Azim_H}:{_object.Azim_M}:{_object.Azim_S}");
-                Thread.Sleep(5000);
+                Thread.Sleep(1000);
                 
             }
 
@@ -98,8 +98,9 @@ namespace AstroCalc
             //Depending upon the current precision setting for the telescope. 
             //AR03: 36:55#txDEC+86?08:57#
 
-            string _ra_Telecope = "02:30:00#";
-            string _dec_Telescope = "+86"+(char)223+"25:57#";
+            //simulace nějakého natočení teleskopu v nějaký čas:
+            string _ra_Telecope = "06:38:00#";//toto se mění --> toto bych měl načítat z arduina
+            string _dec_Telescope = "+54"+(char)223+"55:18#";//toto by mělo být stejné 
 
             if (res.Contains("#:GR#"))
             {

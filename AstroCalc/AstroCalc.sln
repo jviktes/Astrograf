@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AstroCalc", "AstroCalc\Astr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AstroCalcTests", "AstroCalcTests\AstroCalcTests.csproj", "{3D0A4A0A-9F59-4362-B6F1-2CFB1D27F1E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArduinoSerialLink", "ArduinoSerialLink\ArduinoSerialLink.csproj", "{F7F4156C-3A7B-4677-9973-C3E2192DF01F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3D0A4A0A-9F59-4362-B6F1-2CFB1D27F1E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D0A4A0A-9F59-4362-B6F1-2CFB1D27F1E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D0A4A0A-9F59-4362-B6F1-2CFB1D27F1E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7F4156C-3A7B-4677-9973-C3E2192DF01F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7F4156C-3A7B-4677-9973-C3E2192DF01F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7F4156C-3A7B-4677-9973-C3E2192DF01F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7F4156C-3A7B-4677-9973-C3E2192DF01F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
