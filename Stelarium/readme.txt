@@ -13,3 +13,5 @@ AR03:36:55#txDEC+86?08:57#
 Spouštět jako admin!
 Správný protokol.
 
+Alternativy
+http://www.skytechx.eu/?page=home
