@@ -111,7 +111,7 @@ namespace AstroCalc
 
             string _ra_Telecope = "06:38:00#";//toto se mění --> toto bych měl načítat z arduina
 
-            arduinoValue = arduinoValue / 30;
+            arduinoValue = arduinoValue / 30; //15 = pro 1:1, ale ted mám převod že potencometr je 2x vic otáček než ozubené kolo (ozub. kolo se 2x otočí)
             
             _ra_Telecope = $"{CoordinatesObject.getHoures(arduinoValue).ToString("00")}:{CoordinatesObject.getMinutes(arduinoValue).ToString("00")}:{CoordinatesObject.getSeconds(arduinoValue).ToString("00")}#";
 
