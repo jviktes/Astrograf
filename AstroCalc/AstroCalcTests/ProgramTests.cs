@@ -51,6 +51,29 @@ namespace AstroCalc.Tests
             Console.WriteLine(DateTime.Now);
             Console.WriteLine($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
             Console.WriteLine($"Souradnice objektu jsou Azim= {_object.Azim_H}:{_object.Azim_M}:{_object.Azim_S}");
+
+        }
+        [TestMethod()]
+        public void TranformToEqitorial()
+        {
+            double star_altitude = 19.334344;
+            double star_azimut = 283.271028;
+            double userLatitude = 52;
+
+            //GST is 0h 24m 05s
+
+            double deltaTest = CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(star_altitude), CoordinatesObject.degreeToRadian(star_azimut), CoordinatesObject.degreeToRadian(userLatitude));
+            var deltaTestDegree = CoordinatesObject.radianToDegree(deltaTest);
+            Assert.AreEqual(23.219444, Math.Round(deltaTestDegree, 6));
+
+            double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(star_altitude), CoordinatesObject.degreeToRadian(userLatitude), CoordinatesObject.degreeToRadian(star_azimut), deltaTest);
+            double tt = CoordinatesObject.radianToDegree(HA);
+
+            double ha_ = tt / 15;
+            var hhh = CoordinatesObject.getHoures(ha_);
+            var mmm = CoordinatesObject.getMinutes(ha_);
+            var ss = CoordinatesObject.getSeconds(ha_);
+
         }
     }
 }

@@ -109,25 +109,49 @@ namespace AstroCalc
             String _valueFromArduino = ArduinoWork.ActualValueFromArduino;
             Double.TryParse(_valueFromArduino, out Double arduinoValue);
 
-            string _ra_Telecope = "06:38:00#";//toto se mění --> toto bych měl načítat z arduina
+            //zde nějak získám hodnoty azimutu a alt z arduino potenciometrů:
+            //=> potrebuju prevod z alt-azim na ra-dec souřadnice:
 
-            arduinoValue = arduinoValue / 30; //15 = pro 1:1, ale ted mám převod že potencometr je 2x vic otáček než ozubené kolo (ozub. kolo se 2x otočí)
+            double azimut_arduino_degree = 283.271028;
+            double alt_arduino_degree = 19.334344;
             
-            _ra_Telecope = $"{CoordinatesObject.getHoures(arduinoValue).ToString("00")}:{CoordinatesObject.getMinutes(arduinoValue).ToString("00")}:{CoordinatesObject.getSeconds(arduinoValue).ToString("00")}#";
+           LAT_degree = 52;
 
-            string _dec_Telescope = "+54"+(char)223+"55:18#";//toto by mělo být stejné 
+            double _deltaTest = CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree));
+            var dec_vel_to_Stelarium_degree = CoordinatesObject.radianToDegree(_deltaTest);
+
+            double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), _deltaTest);
+            double tt = CoordinatesObject.radianToDegree(HA);
+            double ha_ = tt/15;
+
+            string _ra_StelariumFormat_Telecope = "";// 06:38:00#";//toto se mění --> toto bych měl načítat z arduina
+
+            //arduinoValue = arduinoValue / 30; //15 = pro 1:1, ale ted mám převod že potencometr je 2x vic otáček než ozubené kolo (ozub. kolo se 2x otočí)
+            //_ra_StelariumFormat_Telecope = $"{CoordinatesObject.getHoures(arduinoValue).ToString("00")}:{CoordinatesObject.getMinutes(arduinoValue).ToString("00")}:{CoordinatesObject.getSeconds(arduinoValue).ToString("00")}#";
+
+            string _dec_StelariumFormat_Telescope = "+54"+(char)223+"55:18#";//toto by mělo být stejné 
 
             if (res.Contains("#:GR#"))
             {
-                sp.Write(_ra_Telecope);
-                Console.WriteLine(_ra_Telecope);
+               // _ra_StelariumFormat_Telecope = "06:38:00#";
+
+
+                var hhh = CoordinatesObject.getHoures(ha_);
+                var mmm = CoordinatesObject.getMinutes(ha_);
+                var ss = CoordinatesObject.getSeconds(ha_);
+                _ra_StelariumFormat_Telecope =$"{CoordinatesObject.getHoures(ha_).ToString("00")}:{CoordinatesObject.getMinutes(ha_).ToString("00")}:{CoordinatesObject.getSeconds(ha_).ToString("00")}#";
+
+                sp.Write(_ra_StelariumFormat_Telecope);
+                Console.WriteLine(_ra_StelariumFormat_Telecope);
                 //sp.Write(Environment.NewLine);
             }
 
             if (res.Contains(":GD#"))
             {
-                Console.WriteLine(_dec_Telescope);
-                sp.Write(_dec_Telescope);
+                //_dec_StelariumFormat_Telescope = "+54" + (char)223 + "55:18#";//toto by mělo být stejné 
+                _dec_StelariumFormat_Telescope = $"+{CoordinatesObject.getHoures(dec_vel_to_Stelarium_degree).ToString("00")}{(char)223}{CoordinatesObject.getMinutes(dec_vel_to_Stelarium_degree).ToString("00")}:{CoordinatesObject.getSeconds(dec_vel_to_Stelarium_degree).ToString("00")}#";//toto by mělo být stejné 
+                Console.WriteLine(_dec_StelariumFormat_Telescope);
+                sp.Write(_dec_StelariumFormat_Telescope);
             }
 
             if (res.Contains("Sr"))
@@ -312,6 +336,40 @@ namespace AstroCalc
 
         }
 
+        public CoordinatesObject(double _ALT_Degree_deg, double _AZIMUT_degree, double _LAT_degree, double _LONG_degree, bool isAltAzim)
+        {
+            this.ALT_Degree = _ALT_Degree_deg;
+            this.AZIMUT_degree = _AZIMUT_degree;
+            this.LAT_degree = _LAT_degree;
+            this.LONG_degree = _LONG_degree;
+        }
+
+        public static double Get_HA_from(Double starAltitude, double userLatitude, double azimut, double delta)
+        {
+            double HA_Degree = 0;
+
+            double cosHA = (Math.Sin(starAltitude) -Math.Sin(userLatitude) * (Math.Sin(delta))) / (Math.Cos(userLatitude) * Math.Cos(delta));
+            var nn = Math.Sin(azimut);
+            if (Math.Sin(azimut)<0)
+            {
+                return Math.Acos(cosHA);
+            }
+            else
+            {
+                return 360-Math.Acos(cosHA);
+            }
+            
+        }
+        public static double Get_Delta_from(double altitude, double azimut, double latitude)
+        {
+            //where φ is the observer’s geographical latitude.
+            //sinδ = sina*sinφ + cosa*cosφ cosA
+            double deltaDegree = 0;
+            deltaDegree = Math.Asin(Math.Sin(altitude) * Math.Sin(latitude) + Math.Cos(altitude) * Math.Cos(latitude) * Math.Cos(azimut));
+            return deltaDegree;
+        }
+
+
         public static double getLST(DateTime localDateTime, double _LONG_degree)
         {
             DateTime J2000 = new DateTime(2000, 1, 1, 12, 0, 0);
@@ -383,8 +441,13 @@ namespace AstroCalc
             //return coordinatesObject;
         }
 
+        /// <summary>
+        /// vstupy jsou alt a azimut, výstupy jsou 
+        /// </summary>
+        public void TransformHorizontalToEquitorial()
+        {
 
-
+        }
 
         public static double getHoures(double _degree)
         {
