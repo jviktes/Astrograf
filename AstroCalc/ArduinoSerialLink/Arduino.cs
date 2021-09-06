@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 
 namespace ArduinoSerialLink
 {
+        
 
     public class ArduinoWork
     {
-        public static String ActualValueFromArduino;
-        static SerialPort mySerialPort;
+        public static String AzimutActualValueFromArduino;
+        public static String AltActualValueFromArduino;
 
+        static SerialPort mySerialPort;
+        
         public ArduinoWork(string portName)
         {
             Console.WriteLine("Arduino serial link starting...");
@@ -41,20 +44,40 @@ namespace ArduinoSerialLink
                 mySerialPort.Read(buffer, 0, bytes);
 
                 string res = Encoding.UTF8.GetString(buffer);
-
+                
+                //vystup z arduina:
+                //az:127.44|al:42.52
+                
                 //parsing value:
                 string[] parVal = res.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (parVal.Length > 0)
-                {
-                    //buffer obsahuje plno hodnot (arduino posílá po 100ms), beru tu poslední
-                    //Console.WriteLine($"{DateTime.Now}: {parVal.Last()}");
-                    ActualValueFromArduino = parVal.Last();
-                }
-                else
-                {
+				try
+				{
+					if (parVal.Length > 0)
+					{
+						//buffer obsahuje plno hodnot (arduino posílá po 100ms), beru tu poslední
+						//Console.WriteLine($"{DateTime.Now}: {parVal.Last()}");
 
-                }
+						string[] azAltRawData = parVal.Last().Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+						string azimutRaw = azAltRawData[0].Replace("az:", "");
+
+
+						string altRaw = azAltRawData[1].Replace("al:", "");
+
+						AzimutActualValueFromArduino = azimutRaw;
+						AltActualValueFromArduino = altRaw;
+
+					}
+					else
+					{
+
+					}
+				}
+				catch (Exception ex)
+				{
+                    //když se něco pos*, tak pokračuju, nějak to dopadne
+					//throw;
+				}
 
                 Thread.Sleep(200);
 
@@ -83,7 +106,7 @@ namespace ArduinoSerialLink
 
             while(true)
             {
-                String _value = ArduinoWork.ActualValueFromArduino;
+                String _value = ArduinoWork.AzimutActualValueFromArduino;
                 //Console.WriteLine(_value);
                 Thread.Sleep(500);
             }

@@ -56,24 +56,37 @@ namespace AstroCalc.Tests
         [TestMethod()]
         public void TranformToEqitorial()
         {
-            double star_altitude = 19.334344;
-            double star_azimut = 283.271028;
+            double star_altitude = 18.02;
+            double star_azimut = 284.55;
             double userLatitude = 52;
-
+            double userLongtitude = 30;
             //GST is 0h 24m 05s
 
+            //https://frostydrew.org/utilities.dc/convert/tool-he_coordinates/
+
+            //test prevodu alt na delta(deklinace):
             double deltaTest = CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(star_altitude), CoordinatesObject.degreeToRadian(star_azimut), CoordinatesObject.degreeToRadian(userLatitude));
             var deltaTestDegree = CoordinatesObject.radianToDegree(deltaTest);
-            Assert.AreEqual(23.219444, Math.Round(deltaTestDegree, 6));
+            //Assert.AreEqual(23.219444, Math.Round(deltaTestDegree, 6));
 
-            double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(star_altitude), CoordinatesObject.degreeToRadian(userLatitude), CoordinatesObject.degreeToRadian(star_azimut), deltaTest);
-            double tt = CoordinatesObject.radianToDegree(HA);
-
+            //test prevodu z azimut na hour
+            DateTime dateTime = new DateTime(2021,1,1,20,0,0);
+            double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(star_altitude), CoordinatesObject.degreeToRadian(userLatitude), CoordinatesObject.degreeToRadian(star_azimut), deltaTest, userLongtitude, dateTime);
+            //double tt = CoordinatesObject.radianToDegree(HA); //87.933334
+            double tt = HA;
             double ha_ = tt / 15;
             var hhh = CoordinatesObject.getHoures(ha_);
             var mmm = CoordinatesObject.getMinutes(ha_);
             var ss = CoordinatesObject.getSeconds(ha_);
+            //Assert.AreEqual(5, Math.Round(hhh, 0));
+            //Assert.AreEqual(51, Math.Round(mmm, 0));
+            //Assert.AreEqual(44, Math.Round(ss, 0));
 
+        }
+
+        [TestMethod()]
+        public void cAstroLib() {
+            cAstroCalc.cBasicAstro.Calculate();
         }
     }
 }

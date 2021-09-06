@@ -59,6 +59,10 @@
       <Project>{91FB721B-19B7-4F7F-BC84-34F7B8D80A4F}</Project>
       <Name>AstroCalc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\cAstroCalc\cAstroCalc.csproj">
+      <Project>{ffd3af7c-6d69-4199-87db-5e0349f9a857}</Project>
+      <Name>cAstroCalc</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

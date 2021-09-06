@@ -1,4 +1,5 @@
 ﻿using ArduinoSerialLink;
+using cAstroCalc;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -106,39 +107,52 @@ namespace AstroCalc
             //AR03: 36:55#txDEC+86?08:57#
 
             //simulace nějakého natočení teleskopu v nějaký čas:
-            String _valueFromArduino = ArduinoWork.ActualValueFromArduino;
-            Double.TryParse(_valueFromArduino, out Double arduinoValue);
+            String _azimutValueFromArduino = ArduinoWork.AzimutActualValueFromArduino;
+            Double.TryParse(_azimutValueFromArduino.Replace('.',','), out Double azimutVal);
+
+            String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
+            Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
 
             //zde nějak získám hodnoty azimutu a alt z arduino potenciometrů:
             //=> potrebuju prevod z alt-azim na ra-dec souřadnice:
 
-            double azimut_arduino_degree = 283.271028;
-            double alt_arduino_degree = 19.334344;
+            //double azimut_arduino_degree = 283.271028;
+            //double alt_arduino_degree = 19;
             
-           LAT_degree = 52;
+            double userLatitude = 50.76777777777777;
+            double userLongtitude = 15.079166666666666;
+            int zone = -1;
+            int dst = -1;
 
-            double _deltaTest = CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree));
-            var dec_vel_to_Stelarium_degree = CoordinatesObject.radianToDegree(_deltaTest);
+            LAT_degree = 52;
 
-            double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), _deltaTest);
-            double tt = CoordinatesObject.radianToDegree(HA);
-            double ha_ = tt/15;
+            cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
+            Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, azimutVal, altVal); //CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree));
+            
+            //var dec_vel_to_Stelarium_degree = CoordinatesObject.radianToDegree(_deltaTest);
+
+            //double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), _deltaTest, userLongtitude, DateTime.Now);
+            //double tt = CoordinatesObject.radianToDegree(HA);
+
+            double ha_ = ra_Dec_Values.RA;
+            double _dec = ra_Dec_Values.DEC;
 
             string _ra_StelariumFormat_Telecope = "";// 06:38:00#";//toto se mění --> toto bych měl načítat z arduina
+            string _dec_StelariumFormat_Telescope = "";//+54"+(char)223+"55:18#";//toto by mělo být stejné 
 
             //arduinoValue = arduinoValue / 30; //15 = pro 1:1, ale ted mám převod že potencometr je 2x vic otáček než ozubené kolo (ozub. kolo se 2x otočí)
             //_ra_StelariumFormat_Telecope = $"{CoordinatesObject.getHoures(arduinoValue).ToString("00")}:{CoordinatesObject.getMinutes(arduinoValue).ToString("00")}:{CoordinatesObject.getSeconds(arduinoValue).ToString("00")}#";
 
-            string _dec_StelariumFormat_Telescope = "+54"+(char)223+"55:18#";//toto by mělo být stejné 
+            //string _dec_StelariumFormat_Telescope = ra_Dec_Values.DEC;//"+54"+(char)223+"55:18#";//toto by mělo být stejné 
 
             if (res.Contains("#:GR#"))
             {
-               // _ra_StelariumFormat_Telecope = "06:38:00#";
-
 
                 var hhh = CoordinatesObject.getHoures(ha_);
                 var mmm = CoordinatesObject.getMinutes(ha_);
                 var ss = CoordinatesObject.getSeconds(ha_);
+
+                //format dat  "06:38:00#";
                 _ra_StelariumFormat_Telecope =$"{CoordinatesObject.getHoures(ha_).ToString("00")}:{CoordinatesObject.getMinutes(ha_).ToString("00")}:{CoordinatesObject.getSeconds(ha_).ToString("00")}#";
 
                 sp.Write(_ra_StelariumFormat_Telecope);
@@ -148,8 +162,8 @@ namespace AstroCalc
 
             if (res.Contains(":GD#"))
             {
-                //_dec_StelariumFormat_Telescope = "+54" + (char)223 + "55:18#";//toto by mělo být stejné 
-                _dec_StelariumFormat_Telescope = $"+{CoordinatesObject.getHoures(dec_vel_to_Stelarium_degree).ToString("00")}{(char)223}{CoordinatesObject.getMinutes(dec_vel_to_Stelarium_degree).ToString("00")}:{CoordinatesObject.getSeconds(dec_vel_to_Stelarium_degree).ToString("00")}#";//toto by mělo být stejné 
+                //Format dat: +54"+(char)223+"55:18#"
+                _dec_StelariumFormat_Telescope = $"+{CoordinatesObject.getHoures(_dec).ToString("00")}{(char)223}{CoordinatesObject.getMinutes(_dec).ToString("00")}:{CoordinatesObject.getSeconds(_dec).ToString("00")}#"; 
                 Console.WriteLine(_dec_StelariumFormat_Telescope);
                 sp.Write(_dec_StelariumFormat_Telescope);
             }
@@ -344,21 +358,25 @@ namespace AstroCalc
             this.LONG_degree = _LONG_degree;
         }
 
-        public static double Get_HA_from(Double starAltitude, double userLatitude, double azimut, double delta)
+        public static double Get_HA_from(Double starAltitude, double userLatitude, double azimut, double delta, double longtitude, DateTime DTF)
         {
-            double HA_Degree = 0;
+            double r = 0;
+            double H = 0;
+            double cosHA = (Math.Sin(starAltitude) -Math.Sin(userLatitude) * Math.Sin(delta)) / (Math.Cos(userLatitude) * Math.Cos(delta));
+            //var nn = Math.Sin(azimut);
+            H = CoordinatesObject.radianToDegree(Math.Acos(cosHA));
+            if (Math.Sin(azimut)>0)
+            {
+                H = 360 - H;
+            }
 
-            double cosHA = (Math.Sin(starAltitude) -Math.Sin(userLatitude) * (Math.Sin(delta))) / (Math.Cos(userLatitude) * Math.Cos(delta));
-            var nn = Math.Sin(azimut);
-            if (Math.Sin(azimut)<0)
-            {
-                return Math.Acos(cosHA);
-            }
-            else
-            {
-                return 360-Math.Acos(cosHA);
-            }
-            
+            //r = LST(DTF, longtitude) - H;
+            r = getLST(DTF, longtitude)-(H);
+
+            if (r < 0) { r = r + 360; }
+
+            return r;
+
         }
         public static double Get_Delta_from(double altitude, double azimut, double latitude)
         {
@@ -392,6 +410,39 @@ namespace AstroCalc
             LST = correctedLST; //asi OK po vydeleni 15 dostanu hodiny a ty odpovídají
             return LST;
         }
+
+
+        //double CalcSidrealTime(ref DateTime time, double longitude)
+        //{
+        //    int year = time.Year;
+        //    int month = time.Month;
+        //    int day = time.Day;
+        //    int hour = time.Hour;
+        //    int min = time.Minute;
+        //    int second = time.Second;
+
+        //    if (month == 1 || month == 2)
+        //    {
+        //        year--;
+        //        month += 12;
+        //    }
+
+        //    int a, b, c, d;
+        //    a = (int)System.Math.Floor(year / 100.0);
+        //    b = 2 - a + (int)System.Math.Floor(a / 4.0);
+        //    c = (int)System.Math.Floor(365.25 * year);
+        //    d = (int)System.Math.Floor(30.6001 * (month + 1));
+
+        //    double jd, jt, mst = 0;
+
+        //    // calc the number of Julian days since J2000.0
+        //    jd = b + c + d - 730550.5 + day + HourMinSecToDouble(hour, min, second) / 24.0;
+
+        //    // calc the number of Julian centuries since J2000.0
+        //    jt = jd / 36525.0;
+
+        //    return mst;
+        //}
 
         /// <summary>
         /// 
@@ -474,7 +525,7 @@ namespace AstroCalc
         public static double radianToDegree(double degreeRadians)
         {
 
-            return degreeRadians * 180 / (Math.PI);
+            return degreeRadians * 180 / (Math.PI); //Math.PI /180
         }
     }
 }
