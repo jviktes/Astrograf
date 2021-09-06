@@ -1,0 +1,1067 @@
+﻿
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+    <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+    <meta NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <title>al_az</title>
+    <link href="print.css" media="print" rel="STYLESHEET" type="text/css">
+    <link href="main.css" media="screen" rel="STYLESHEET" type="text/css">
+    <meta name="viewport" content="user-scalable=no, width=device-width">
+    <script LANGUAGE="JavaScript" TYPE="text/javascript">
+
+var locsrch = ""
+var topcss = ""
+if (typeof(location.search) == "string") {
+  locsrch = location.search
+  x = locsrch.indexOf("?")
+  if (x != -1) {
+    var r = locsrch.substr(x+1)
+    var x = r.toLowerCase().indexOf("css=") ; if (x != -1) topcss = Amper(r.substr(x+4))
+  }
+}
+if (topcss != "") {
+  document.write('<link href="'+topcss+'.css" rel="STYLESHEET" media="screen" type="text\/css">')
+}
+//
+function TheTop(obj) {
+  top.location.href = obj.href+locsrch
+  return false
+}
+//
+//    This function returns description, up to ampersand.
+//
+function Amper(desc) {
+  var r = desc
+  var x = r.indexOf("&") ; if (x != -1) r = r.substr(0,x)
+  return r
+}
+//
+function getStandardTimezoneOffset() {
+  var dte = new Date()
+  var msec = dte.getTime()
+  var offset = -999999
+  for (var j = 0 ; j < 4 ; ++j) {
+    dte.setTime(msec + j * 7884000000)
+    offset = Math.max(offset, dte.getTimezoneOffset())
+  }
+  return offset
+}
+//
+//    Mathematic section.
+//
+//    This function returns the integer of a number.
+//
+function intr(num) {
+  with (Math) {
+    var n = floor(abs(num)) ; if (num < 0) n = n * -1
+  }
+  return n
+}
+//
+//    This function returns a numeric value.
+//
+function NumFloat(num) {
+  with (Math) {
+    var temp = parseFloat(num)
+    if (!(temp > 0 || temp < 0 || temp == 0)) temp = 0
+  }
+  return temp
+}
+//
+//    This function rounds a number by specified decimals.
+//
+function rnd(num,num2) {
+  with (Math) {
+    num = round(num*pow(10,num2)) / pow(10,num2)
+  }
+  return num
+}
+//
+//    This function return the sign of a number.
+//
+function sgn(num) {
+  if (num < 0) return -1
+  if (num > 0) return 1
+  return 0
+}
+//
+//    Decimal to radian
+//
+function dtor(num) {
+  with (Math) {
+    return num / 57.29577951
+  }
+}
+//
+//    Radian to decimal
+//
+function rtod(num) {
+  with (Math) {
+    return num * 57.29577951
+  }
+}
+//
+//    Decimal sine
+//
+function dsin(num) {
+  with (Math) {
+    return sin(dtor(num))
+  }
+}
+//
+//    Decimal cosine
+//
+function dcos(num) {
+  with (Math) {
+    return cos(dtor(num))
+  }
+}
+//
+//    Decimal tangent
+//
+function dtan(num) {
+  with (Math) {
+    return tan(dtor(num))
+  }
+}
+//
+//    Decimal arcsine
+//
+function dasn(num) {
+  with (Math) {
+    var y
+    if (num > 1) num = 1
+    if (num < -1) num = -1
+    if (num == 1) {
+      y = 1.570796327
+      }
+    else {
+      y = atan(num/ sqrt(-1 * num * num + 1))
+    }
+  }
+  return rtod(y)
+}
+//
+//    Decimal arccosine
+//
+function dacs(num) {
+  with (Math) {
+    var y
+    if (num > 1) num = 1
+    if (num < -1) num = -1
+    if (num == 1) {
+      y = 0
+      }
+    else {
+      y = 1.570796327 - atan(num / sqrt(-1 * num * num + 1))
+    }
+  }
+  return rtod(y)
+}
+//
+//    DD.MMSS to degrees: HH.MMSS to HH.HHHHH
+//
+function deg(a) {
+  with (Math) {
+    var a1, a2, a3, mm, sgn0, ss
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+  }
+  return sgn0 * (a1 + a2 / 60 + a3 / 3600)
+}
+//
+function dms(a) {
+  with (Math) {
+    var a1, a2, a3, mm, sgn0, ss
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 60 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 60 ; ss = rnd(ss,6)
+    a3 = intr(ss)
+  }
+  return sgn0 * (a1 + a2 / 100 + a3 / 10000)
+}
+//
+//    returns string version of dms(), time format
+//
+function DMST(x) {
+  var temp = dms(Math.abs(x))
+  var hr = intr(temp) ; temp = (temp - hr) * 100 ; temp = rnd(temp,6)
+  var mn = intr(temp) ; temp = (temp - mn) * 100 ; temp = rnd(temp,6)
+  if (mn < 10) mn = "0" + mn
+  var sc = intr(temp) ; if (sc < 10) sc = "0" + sc
+  var tmp = (sgn(x)==-1) ? "-" : ""
+  return tmp + hr + ":" + mn + ":" + sc
+}
+//
+//    Mathematic section exit.
+//
+//    Atlas page section.
+//
+//    The purpose of this function is to return the m2000 page, given the ra/dec.
+//    * ************************
+//    * FROM SKY & TELESCOPE'S
+//    * ASTRONOMICAL COMPUTING
+//    * FOR OCT, 1998, P. 60
+//    * ************************
+//
+function m2000(ra, dec) {
+  with (Math) {
+    var m2000, cvol, nvol
+    // ra = deg(ra)
+    // dec = deg(dec)
+
+    if (abs(dec) > 87) ra = 0
+
+    if (ra < 0 || ra >= 24) {
+      cvol = "Error"
+      nvol = 0
+      }
+    else if (ra <= 8) {
+      cvol = "Vol I"
+      nvol = 0
+      }
+    else if (ra <= 16) {
+      cvol = "Vol II"
+      nvol = 1
+      }
+    else {
+      cvol = "Vol III"
+      nvol = 2
+    }
+
+    var qt, pa, qn
+    qt = 0
+    pa = 0
+    qn = 0
+
+    if (abs(dec) > 90) dec = 90
+
+    if (abs(dec) <= 90) {
+      pa = 240
+      qt = qt + 2
+      qn = 2
+    }
+    if (abs(dec) < 87) {
+      pa = 120
+      qt = qt + 4
+      qn = 4
+    }
+    if (abs(dec) < 81) {
+      pa = 60
+      qt = qt + 8
+      qn = 8
+    }
+    if (abs(dec) < 75) {
+      pa = 48
+      qt = qt + 10
+      qn = 10
+    }
+    if (abs(dec) < 69) {
+      pa = 40
+      qt = qt + 12
+      qn = 12
+    }
+    if (abs(dec) < 63) {
+      pa = 480/14
+      qt = qt + 14
+      qn = 14
+    }
+    if (abs(dec) < 57) {
+      pa = 30
+      qt = qt + 16
+      qn = 16
+    }
+    if (abs(dec) < 51) {
+      pa = 24
+      qt = qt + 20
+      qn = 20
+    }
+    if (abs(dec) < 45) {
+      pa = 24
+      qt = qt + 20
+      qn = 20
+    }
+    if (abs(dec) < 39) {
+      pa = 480/22
+      qt = qt + 22
+      qn = 22
+    }
+    if (abs(dec) < 33) {
+      pa = 480/22
+      qt = qt + 22
+      qn = 22
+    }
+    if (abs(dec) < 27) {
+      pa = 20
+      qt = qt + 24
+      qn = 24
+    }
+    if (abs(dec) < 21) {
+      pa = 20
+      qt = qt + 24
+      qn = 24
+    }
+    if (abs(dec) < 15) {
+      pa = 20
+      qt = qt + 24
+      qn = 24
+    }
+    if (abs(dec) < 9) {
+      pa = 20
+      qt = qt + 24
+      qn = 24
+    }
+    if (abs(dec) < 3) {
+      pa = 20
+      qt = qt + 24
+      qn = 24
+    }
+
+    if (ra == 8) {
+      ra = 7.99
+      }
+    else if (ra == 16) {
+      ra = 15.99
+      }
+    else if (ra == 24) {
+      ra = 23.99
+    }
+
+    if (ra > nvol * 8) ra = ra - (nvol * 8)
+
+    var ca, ch
+    if (pa==0) pa=1
+    ca = intr((ra * 60) / pa)
+    if (abs(dec) > 87 && (dms(ra) > 4 && dms(ra) < 16)) {
+      qt = 1
+      qn = 0
+    }
+    ch = qt - ca + (nvol*516)
+    if (dec < 0) ch = 516 + (nvol*516) - qt + qn - ca
+    return "" + ch + " " + cvol
+  }
+}
+//    The purpose of this function is to return the t2000 page, given the ra/dec.
+//    * ************************
+//    * FROM SKY & TELESCOPE'S
+//    * ASTRONOMICAL COMPUTING
+//    * FOR APRIL, 1989, P. 420
+//    * ************************
+//
+function t2000(ra, dec) {
+  with (Math) {
+    var t2000
+    // ra = deg(ra)
+    // dec = deg(dec)
+
+    if (abs(dec) < 18.5) {
+      t2000 = 9 + intr(ra/3 + 1/1.2)
+      if (t2000==9) t2000=17
+      }
+    else if (abs(dec) < 52) {
+      t2000 = 4 + intr(ra/4)
+      if (dec < 0) t2000=t2000 + 14
+      }
+    else {
+      t2000 = 1 + intr(ra/8)
+      if (dec < 0) t2000=t2000 + 23
+    }
+    return "" + t2000
+  }
+}
+//    The purpose of this function is to return the u2000 page, given the ra/dec.
+//    * ************************
+//    * FROM SKY & TELESCOPE'S
+//    * ASTRONOMICAL COMPUTING
+//    * FOR APRIL, 1989, P. 420
+//    * ************************
+//
+function u2000(ra, dec) {
+  with (Math) {
+    var vol, u2000
+    // ra = deg(ra)
+    // dec = deg(dec)
+    if (dec >=0) {
+      vol = "Vol I"
+      }
+    else {
+      vol = "Vol II"
+    }
+    if (abs(dec) < 5.5) {
+      u2000 = 215 + intr(ra*1.875+.5)
+      if (u2000==260) u2000=215
+      vol = "Vol I & II"
+      }
+    else if (abs(dec) < 17) {
+      u2000=170+intr(ra*1.875+.5)
+      if (u2000==215) u2000=170
+      if (dec<0) u2000=u2000+90
+      }
+    else if (abs(dec) < 28) {
+      u2000=125+intr(ra*1.875+.5)
+      if (u2000==170) u2000=125
+      if (dec<0) u2000=u2000+180
+      }
+    else if (abs(dec) < 39) {
+      u2000=89+intr(ra*1.5+.5)
+      if (u2000==125) u2000=89
+      if (dec<0) u2000=u2000+261
+      }
+    else if (abs(dec) < 50) {
+      u2000=59+intr(ra/.8+.5)
+      if (u2000==89) u2000=59
+      if (dec<0) u2000=u2000+327
+      }
+    else if (abs(dec) < 61) {
+      u2000=35+intr(ra+.5)
+      if (u2000==59) u2000=35
+      if (dec<0) u2000=u2000+381
+      }
+    else if (abs(dec) < 72.5) {
+      u2000=15+intr(ra/1.2+.5)
+      if (u2000==35) u2000=15
+      if (dec<0) u2000=u2000+425
+      }
+    else if (abs(dec) < 84.5) {
+      u2000=3+intr(ra/2+1/2.4)
+      if (u2000==15) u2000=3
+      if (dec<0) u2000=u2000+457
+      }
+    else {
+      u2000=1+intr(ra/12)
+      if (dec<0) u2000=474-u2000
+      }
+    return "" + u2000 + " " + vol
+  }
+}
+//
+//    Atlas page section exit.
+//
+//    Sideral Time section.
+//
+//    This function returns the day of the year given the date.
+//
+function doy(dte) {
+  with (Math) {
+    var j, mo, dy, y
+    j = 0
+    for (mo = 1;mo<dte.getMonth()+1;mo++) {
+      dy = 31
+      if (mo == 2) {
+        dy = 28
+        y = dte.getFullYear() // + 1900 ; if (y >= 3900) y = y - 1900
+        if (intr(y / 4) == y / 4) dy = 29
+      }
+      if (mo == 4 || mo == 6 || mo == 9 || mo == 11) dy = 30
+      j = j + dy
+    }
+  }
+  return j + dte.getDate()
+}
+//
+//    This function returns the universal time, given the date and time zone.
+//
+function ut(dte, zone) {
+  with (Math) {
+    var ut
+    ut = dte.getHours() + dte.getMinutes() / 100 + dte.getSeconds() / 10000
+    ut = deg(ut) + zone
+    ut_flag = 0
+    if (ut > 24) {
+      ut = ut - 24
+      ut_flag = 1
+    }
+  }
+  return rnd(ut,4)
+}
+//
+//    This function returns the precession, given the date.
+//
+
+function precess(dte) {
+  with (Math) {
+    var p, r, s, t, y
+    y = dte.getFullYear() // + 1900  ; if (y >= 3900) y = y - 1900
+    p = y - 1
+    r = intr(p / 100)
+    s = 2 - r + intr(r / 4)
+    t = intr(365.25 * p)
+    r = (s + t - 693597.5) / 36525
+    s = 6.646 + 2400.051 * r
+  }
+  return 24 - s + (24 * (y - 1900))
+}
+//
+//    This function computes the nutation, given the date and ra/dec/epoch.
+//
+function nutation(dte) {
+  with (Math) {
+    var ad, ar, k, l, mm, r, y
+    y = dte.getFullYear() // + 1900 ; if (y >= 3900) y = y - 1900
+    mm = (y - epoch) / 360000
+    r = (epoch - 1900) / 100
+    k = 4608.5 + 2.8 * r
+    l = 2004.7 -  .8 * r
+    ar = (k + l * dsin(ra) * dtan(dec)) * mm
+    ad = (    l * dcos(ra)            ) * mm
+    ra  = ra + ar
+    dec = dec + ad
+  }
+}
+//
+//    This function returns the local sideral time, given the date/time zone and longitude.
+//
+function sideral(dte, zone, lon) {
+  with (Math) {
+    var j, uct, lst, gst
+    ut_flag = 0
+      uct = ut(dte, zone)
+      console.log("uct:"); console.log(uct);
+      gst = (doy(dte) + ut_flag) * .0657098 - precess(dte) + uct * 1.002738;
+      console.log("gst:"); console.log(gst);
+    if (gst > 24) gst = gst - 24
+    if (gst <  0) gst = gst + 24
+    lst = gst + lon / 15
+    if (lst > 24) lst = lst - 24
+    if (lst <  0) lst = lst + 24
+    }
+
+
+    console.log("lst:"); console.log(lst);
+  return lst
+}
+//    Sideral Time section exit.
+//
+//    This function returns az/al, given the date/time zone, longitude/latitude, and ra/dec.
+//
+function az_al(dte, zone, lon, lat, ra, dec) {
+  with (Math) {
+    var j, s
+
+//    ra = deg(ra)
+//    dec = deg(dec)
+
+    if (epoch != 2000) nutation(dte)
+
+    s = sideral(dte, zone, lon) - ra
+    if (s < 0) s = s + 24
+    s = 15 * s
+    j = dsin(dec) * dsin(lat) + dcos(dec) * dcos(lat) * dcos(s)
+    al = dasn(j)
+    j = (dsin(dec) - dsin(lat) * dsin(al)) / (dcos(lat) * dcos(al))
+    az = dacs(j)
+    j = dsin(s)
+    if (j > 0) az = 360 - az
+
+//    al = rnd(dms(al),4)
+//    az = rnd(dms(az),4)
+  }
+}
+//
+//    This function returns ra/dec, given the date/time zone, longitude/latitude, and az/al.
+//
+function ra_dec(dte, zone, lon, lat, az, al) {
+  with (Math) {
+    var j, s
+
+//    az = deg(az)
+//    al = deg(al)
+
+    j = dsin(al) * dsin(lat) + dcos(al) * dcos(lat) * dcos(az)
+    dec = dasn(j)
+    j = (dsin(al) - dsin(lat) * dsin(dec)) / (dcos(lat) * dcos(dec))
+    s = dacs(j)
+    j = dsin(az)
+    if (j > 0) s = 360 - s
+    ra = sideral(dte, zone, lon) - s / 15
+    if (ra < 0) ra = ra + 24
+
+//    ra  = rnd(dms(ra),4)
+//    dec = rnd(dms(dec),4)
+  }
+}
+//
+//    The purpose of this function is to return all calculations.
+//
+function calculate(form) {
+  with (Math) {
+    day = NumFloat(form.day.value)
+    month = NumFloat(form.month.options[form.month.selectedIndex].value)
+    year = NumFloat(form.year.value)
+    hr = NumFloat(form.hr.value)
+    mn = NumFloat(form.mn.value)
+    sc = NumFloat(form.sc.value)
+    dte = new Date(month + "/" + day + "/" + year + " " + hr + ":" + mn + ":" + sc)
+
+      zone = Math.abs(NumFloat(form.zone1.value))
+
+      console.log("zone:"); console.log(zone);
+
+    if (form.zone0[1-1].checked) zone = zone * -1
+    dst = Math.abs(NumFloat(form.dst1.value))
+    if (form.dst0[1-1].checked) dst = dst * -1
+
+      console.log("dst:"); console.log(dst);
+
+    var a1, a2, a3, sgn0, d
+    a1 = Math.abs(NumFloat(form.lat1.value))
+    a2 = Math.abs(NumFloat(form.lat2.value))
+    a3 = Math.abs(NumFloat(form.lat3.value))
+    sgn0 = 1 ; if (form.lat0[2-1].checked) sgn0 = -1
+    d = sgn0 * (a1  + a2 / 100 + a3 / 10000)
+    lat = deg(d)
+
+      console.log("lat:"); console.log(lat);
+
+    var a1, a2, a3, sgn0, d
+    a1 = Math.abs(NumFloat(form.lon1.value))
+    a2 = Math.abs(NumFloat(form.lon2.value))
+    a3 = Math.abs(NumFloat(form.lon3.value))
+    sgn0 = 1 ; if (form.lon0[2-1].checked) sgn0 = -1
+    d = sgn0 * (a1  + a2 / 100 + a3 / 10000)
+    lon = deg(d)
+
+      console.log("lon:"); console.log(lon);
+
+    epoch = NumFloat(form.epoch.value)
+    if (epoch == 0) {alert("Epoch cannot be zero") ; return}
+
+      console.log("epoch:"); console.log(epoch);
+
+    var a1, a2, a3, sgn0, d
+    a1 = Math.abs(NumFloat(form.ra1.value))
+    a2 = Math.abs(NumFloat(form.ra2.value))
+    a3 = Math.abs(NumFloat(form.ra3.value))
+    sgn0 = 1 ; if (form.ra1.value.indexOf("-")!=-1) sgn0 = -1
+    d = sgn0 * (a1  + a2 / 100 + a3 / 10000)
+      ra = deg(d)
+
+      console.log("ra:"); console.log(ra);
+
+    var a1, a2, a3, sgn0, d
+    a1 = Math.abs(NumFloat(form.dec1.value))
+    a2 = Math.abs(NumFloat(form.dec2.value))
+    a3 = Math.abs(NumFloat(form.dec3.value))
+    sgn0 = 1 ; if (form.dec1.value.indexOf("-")!=-1) sgn0 = -1
+    d = sgn0 * (a1  + a2 / 100 + a3 / 10000)
+      dec = deg(d)
+
+      console.log("dec:"); console.log(dec);
+
+    var a1, a2, a3, sgn0, d
+    a1 = Math.abs(NumFloat(form.az1.value))
+    a2 = Math.abs(NumFloat(form.az2.value))
+    a3 = Math.abs(NumFloat(form.az3.value))
+    sgn0 = 1 ; if (form.az1.value.indexOf("-")!=-1) sgn0 = -1
+    d = sgn0 * (a1  + a2 / 100 + a3 / 10000)
+      az = deg(d)
+      console.log("az:"); console.log(az);
+
+    var a1, a2, a3, sgn0, d
+    a1 = Math.abs(NumFloat(form.al1.value))
+    a2 = Math.abs(NumFloat(form.al2.value))
+    a3 = Math.abs(NumFloat(form.al3.value))
+    sgn0 = 1 ; if (form.al1.value.indexOf("-")!=-1) sgn0 = -1
+    d = sgn0 * (a1  + a2 / 100 + a3 / 10000)
+      al = deg(d)
+      console.log("al:"); console.log(al);
+
+    if (ra != 0 || dec != 0) {
+      az_al(dte, zone+dst, lon, lat, ra, dec)
+    }
+    else {
+      ra_dec(dte, zone+dst, lon, lat, az, al)
+    }
+
+    var a1, a2, a3, mm, sgn0, ss, d, a
+    d = NumFloat(ra)
+    a = dms(d)
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+    form.ra1.value = a1 * sgn0
+    form.ra2.value = a2
+    form.ra3.value = a3
+
+    var a1, a2, a3, mm, sgn0, ss, d, a
+    d = NumFloat(dec)
+    a = dms(d)
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+    form.dec1.value = a1 * sgn0
+    form.dec2.value = a2
+    form.dec3.value = a3
+
+    var a1, a2, a3, mm, sgn0, ss, d, a
+    d = NumFloat(az)
+    a = dms(d)
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+    form.az1.value = a1 * sgn0
+    form.az2.value = a2
+    form.az3.value = a3
+
+    var a1, a2, a3, mm, sgn0, ss, d, a
+    d = NumFloat(al)
+    a = dms(d)
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+    form.al1.value = a1 * sgn0
+    form.al2.value = a2
+    form.al3.value = a3
+
+    var temp = sideral(dte, zone+dst, lon)
+    form.lst.value = DMST(temp)
+
+    form.u2000.value = u2000(ra,dec)
+    form.t2000.value = t2000(ra,dec)
+    form.m2000.value = m2000(ra,dec)
+  }
+}
+//
+function clearform(form, type) {
+  if (type == 2) {
+    form.ra1.value  = ""
+    form.ra2.value  = ""
+    form.ra3.value  = ""
+    form.dec1.value = ""
+    form.dec2.value = ""
+    form.dec3.value = ""
+  } else {
+    form.az1.value  = ""
+    form.az2.value  = ""
+    form.az3.value  = ""
+    form.al1.value  = ""
+    form.al2.value  = ""
+    form.al3.value  = ""
+  }
+  return true
+}
+//
+//    The purpose of this function is to initializr all form variables.
+//
+function loadit() {
+  with (Math) {
+    day = NumFloat(dte.getDate())
+    month = NumFloat(dte.getMonth())
+    year = NumFloat(dte.getFullYear()) // + 1900 ; if (year >= 3900) year = year - 1900
+    hr = dte.getHours()
+    mn = dte.getMinutes()
+    sc = dte.getSeconds()
+
+    document.al_az.month.selectedIndex = month
+    document.al_az.day.value = "" + day
+    document.al_az.year.value = "" + year
+    document.al_az.hr.value = "" + hr
+    document.al_az.mn.value = "" + mn
+    document.al_az.sc.value = "" + sc
+
+    document.al_az.zone1.value = "" + Math.abs(zone)
+    if (zone <  0) document.al_az.zone0[1-1].checked = true
+    if (zone >= 0) document.al_az.zone0[2-1].checked = true
+
+    document.al_az.dst1.value = "" + Math.abs(dst)
+    if (dst <= 0) document.al_az.dst0[1-1].checked = true
+    if (dst >  0) document.al_az.dst0[2-1].checked = true
+
+    var a1, a2, a3, mm, sgn0, ss, d, a
+    d = NumFloat(lat)
+    a = dms(d)
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+    document.al_az.lat1.value = a1
+    document.al_az.lat2.value = a2
+    document.al_az.lat3.value = a3
+    if (sgn0 ==  1) document.al_az.lat0[1-1].checked = true
+    if (sgn0 == -1) document.al_az.lat0[2-1].checked = true
+
+    var a1, a2, a3, mm, sgn0, ss, d, a
+    d = NumFloat(lon)
+    a = dms(d)
+    sgn0 = 1
+    if (a < 0) {
+      a = -1 * a
+      sgn0 = -1
+    }
+    a1 = intr(a)
+    mm = (a - a1) * 100 ; mm = rnd(mm,6)
+    a2 = intr(mm)
+    ss = (mm - a2) * 100 ; ss = rnd(ss,6)
+    a3 = ss
+    document.al_az.lon1.value = a1
+    document.al_az.lon2.value = a2
+    document.al_az.lon3.value = a3
+    if (sgn0 ==  1) document.al_az.lon0[1-1].checked = true
+    if (sgn0 == -1) document.al_az.lon0[2-1].checked = true
+
+    var temp = sideral(dte, zone+dst, lon)
+    document.al_az.lst.value = DMST(temp)
+
+    document.al_az.epoch.value = "" + epoch
+  }
+}
+
+
+// PUBLIC variables
+
+var dst2, zon1, zon2 // used to determine d.s.t.
+                    zon1 = NumFloat(getStandardTimezoneOffset() / 60)
+dst2 = new Date() ; zon2 = NumFloat(dst2.getTimezoneOffset() / 60)
+
+var dte, zone, dst, lat, lon
+dte = new Date()
+        lat = 50.7678139; // decimal degrees
+        lon = 15.0791961;
+//50.7678139N, 15.0791961E
+
+dst = zon2 - zon1
+zone = 1 // NumFloat(dte.getTimezoneOffset() / 60) - dst
+var x = locsrch.indexOf("?")
+if (x != -1) {
+  var r = locsrch.substr(x+1)
+  var x = r.toLowerCase().indexOf("lat=") ; if (x != -1) lat = NumFloat(r.substr(x+4))
+  var x = r.toLowerCase().indexOf("lon=") ; if (x != -1) lon = NumFloat(r.substr(x+4))
+  var x = r.toLowerCase().indexOf("zone=") ; if (x != -1) zone = NumFloat(r.substr(x+5))
+  var x = r.toLowerCase().indexOf("dst=") ; if (x != -1) dst = NumFloat(r.substr(x+4))
+}
+
+var epoch, lst, ra, dec, az, alm, ut_flag
+epoch = 2000
+
+lst = 0
+ra   = 0
+dec  = 0
+az = 0
+al = 0
+
+ut_flag = 0
+
+// -- End of JavaScript code -------------- -->
+    </script>
+</head>
+
+<body onLoad="loadit()">
+    <div id="header">
+       
+    </div>
+
+    <form name="al_az" ACTION="x" onSubmit="return false">
+        <div align="center">
+            <center>
+                <p>
+                    <b>
+                        <font size="+1">
+                            Convert Right Ascension/Declination
+                            &lt;==&gt; Azimuth/Altitude
+                        </font>
+                    </b>
+                </p>
+            </center>
+        </div><div align="center">
+            <center>
+                <table border="1" cellpadding="2">
+                    <tr>
+                        <td align="right">User Date</td>
+                        <td align="left">
+                            <select name="month">
+                                <option value="01" selected>January
+                                <option value="02">February
+                                <option value="03">March
+                                <option value="04">April
+                                <option value="05">May
+                                <option value="06">June
+                                <option value="07">July
+                                <option value="08">August
+                                <option value="09">September
+                                <option value="10">October
+                                <option value="11">November
+                                <option value="12">
+                                    December
+                                </option>
+                            </select> /
+                            <input type="text" name="day" value="0" size="2"> /
+                            <input type="text" name="year" value="0" size="4"> user input
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">User Time</td>
+                        <td align="left">
+                            <input type="text" name="hr" value="0" size="2"> :
+                            <input type="text" name="mn" value="0" size="2"> :
+                            <input type="text" name="sc" value="0" size="2"> user input
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Time Zone Offset (HH) </td>
+                        <td align="left">
+                            <input type="text" name="zone1" size="5">
+                            <input type="radio"  name="zone0" value="-1"> east &nbsp;
+                            <input type="radio" name="zone0" checked value="1"> west of Greenwich
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Daylight Savings Time (HH)</td>
+                        <td align="left">
+                            <input type="text" name="dst1" size="5">
+                            <input type="radio" name="dst0" checked value="-1"> subtract &nbsp; <input type="radio" name="dst0" value="1"> add
+                            to time zone
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Latitude (DD MM SS) </td>
+                        <td align="left">
+                            <input type="text" name="lat1" value="" size="3">
+                            °&nbsp;
+                            <input type="text" name="lat2" value="" size="2">
+                            '&nbsp;
+                            <input type="text" name="lat3" value="" size="2">
+                            "&nbsp;
+                            <input type="radio" name="lat0" checked value="1"> north &nbsp;
+                            <input type="radio" name="lat0" value="-1"> south
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Longitude (DD MM SS) </td>
+                        <td align="left">
+                            <input type="text" name="lon1" value="" size="3">
+                            °&nbsp;
+                            <input type="text" name="lon2" value="" size="2">
+                            '&nbsp;
+                            <input type="text" name="lon3" value="" size="2">
+                            "&nbsp;
+                            <input type="radio" name="lon0" value="1"> east &nbsp;
+                            <input type="radio" name="lon0" checked value="-1"> west
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Local Sideral Time (HH:MM:SS)</td>
+                        <td align="left"><input type="text" name="lst" value="0" size="10" onfocus="blur()"></td>
+                    </tr>
+                    <tr>
+                        <td align="right">Epoch Year (YYYY)</td>
+                        <td align="left"><input type="text" name="epoch" value="0" size="4"> user input</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Right Ascension (HH MM SS)</td>
+                        <td align="left">
+                            <input onfocus="clearform(this.form,1)" type="text" name="ra1" value="19" size="3">
+                            h&nbsp; <input onfocus="clearform(this.form,1)" type="text" name="ra2" value="50" size="2">
+                            '&nbsp;
+                            <input onfocus="clearform(this.form,1)" type="text" name="ra3" value="47" size="2">
+                            "&nbsp; user input
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Declination (DD MM SS)</td>
+                        <td align="left">
+                            <input onfocus="clearform(this.form,1)" type="text" name="dec1" value="8" size="3">
+                            °&nbsp;
+                            <input onfocus="clearform(this.form,1)" type="text" name="dec2" value="52" size="2">
+                            '&nbsp;
+                            <input onfocus="clearform(this.form,1)" type="text" name="dec3" value="14" size="2">
+                            "&nbsp; user input
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Altitude (DD MM SS)</td>
+                        <td align="left">
+                            <input onfocus="clearform(this.form,2)" type="text" name="al1" value="" size="3">
+                            °&nbsp;
+                            <input onfocus="clearform(this.form,2)" type="text" name="al2" value="" size="2">
+                            '&nbsp;
+                            <input onfocus="clearform(this.form,2)" type="text" name="al3" value="" size="2">
+                            "&nbsp; user input
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Azimuth (DD MM SS)</td>
+                        <td align="left">
+                            <input onfocus="clearform(this.form,2)" type="text" name="az1" value="" size="3">
+                            °&nbsp;
+                            <input onfocus="clearform(this.form,2)" type="text" name="az2" value="" size="2">
+                            '&nbsp;
+                            <input onfocus="clearform(this.form,2)" type="text" name="az3" value="" size="2">
+                            "&nbsp; user input
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Tirion 2000 page</td>
+                        <td align="left"><input type="text" name="t2000" value="0" size="20" onfocus="blur()"></td>
+                    </tr>
+                    <tr>
+                        <td align="right">Uranometeria 2000 page</td>
+                        <td align="left"><input type="text" name="u2000" value="0" size="20" onfocus="blur()"></td>
+                    </tr>
+                    <tr>
+                        <td align="right">Millennium page</td>
+                        <td align="left"><input type="text" name="m2000" value="0" size="20" onfocus="blur()"></td>
+                    </tr>
+                </table>
+            </center>
+        </div><div align="center">
+            <center>
+                <p>
+                    <input type="button" name="calc" value="Calculate" onclick="calculate(form)">
+                </p>
+            </center>
+        </div>
+    </form>
+</body>
+</html>

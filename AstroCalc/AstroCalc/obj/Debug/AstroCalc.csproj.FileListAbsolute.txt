@@ -16,3 +16,5 @@ e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.exe
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.pdb
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.exe.config
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\obj\Debug\AstroCalc.csproj.CopyComplete
+e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\cAstroCalc.dll
+e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\cAstroCalc.pdb
