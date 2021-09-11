@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using cAstroCalc;
 
 namespace AstroCalc.Tests
 {
@@ -86,7 +87,16 @@ namespace AstroCalc.Tests
 
         [TestMethod()]
         public void cAstroLib() {
-            cAstroCalc.cBasicAstro.Calculate();
+            double userLatitude = 50.76777777777777;
+            double userLongtitude = 15.079166666666666;
+            int zone = -1;
+            int dst = -1;
+            cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
+            
+            Double test_azimutVal = 233.0000 + 41/60+27/3600;
+            Double test_altVal = 48.0000 + 7 / 60 + 18 / 3600;
+            Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, test_azimutVal, test_altVal); 
+
         }
     }
 }

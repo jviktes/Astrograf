@@ -106,19 +106,23 @@ namespace AstroCalc
             //Depending upon the current precision setting for the telescope. 
             //AR03: 36:55#txDEC+86?08:57#
 
-            //simulace nějakého natočení teleskopu v nějaký čas:
-            String _azimutValueFromArduino = ArduinoWork.AzimutActualValueFromArduino;
-            Double.TryParse(_azimutValueFromArduino.Replace('.',','), out Double azimutVal);
+            //Fuknční načítání dat z Arduina:
+            //String _azimutValueFromArduino = ArduinoWork.AzimutActualValueFromArduino;
+            //Double.TryParse(_azimutValueFromArduino.Replace('.',','), out Double azimutVal);
+            //String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
+            //Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
 
-            String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
-            Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
+
+            //simulace nějakého natočení teleskopu v nějaký čas:
+            Double azimutVal = 319;
+            Double altVal = 20;
 
             //zde nějak získám hodnoty azimutu a alt z arduino potenciometrů:
             //=> potrebuju prevod z alt-azim na ra-dec souřadnice:
 
             //double azimut_arduino_degree = 283.271028;
             //double alt_arduino_degree = 19;
-            
+
             double userLatitude = 50.76777777777777;
             double userLongtitude = 15.079166666666666;
             int zone = -1;
@@ -145,6 +149,7 @@ namespace AstroCalc
 
             //string _dec_StelariumFormat_Telescope = ra_Dec_Values.DEC;//"+54"+(char)223+"55:18#";//toto by mělo být stejné 
 
+            bool messageProcessed = false;
             if (res.Contains("#:GR#"))
             {
 
@@ -157,7 +162,7 @@ namespace AstroCalc
 
                 sp.Write(_ra_StelariumFormat_Telecope);
                 Console.WriteLine(_ra_StelariumFormat_Telecope);
-                //sp.Write(Environment.NewLine);
+                messageProcessed = true;
             }
 
             if (res.Contains(":GD#"))
@@ -166,31 +171,40 @@ namespace AstroCalc
                 _dec_StelariumFormat_Telescope = $"+{CoordinatesObject.getHoures(_dec).ToString("00")}{(char)223}{CoordinatesObject.getMinutes(_dec).ToString("00")}:{CoordinatesObject.getSeconds(_dec).ToString("00")}#"; 
                 Console.WriteLine(_dec_StelariumFormat_Telescope);
                 sp.Write(_dec_StelariumFormat_Telescope);
+                messageProcessed = true;
             }
 
             if (res.Contains("Sr"))
             {
                 Console.WriteLine("1");
-                sp.Write("1");
+                sp.Write("0"); //"#:Q#:Sr05:16:42#"
+                messageProcessed = true;
             }
 
             if (res.Contains("Sd"))
             {
-                Console.WriteLine("1");
-                sp.Write("1");
+                Console.WriteLine("1"); //":Sd+45*59:43#"
+                sp.Write("0");
+                messageProcessed = true;
             }
             if (res.Contains(":MS#"))
             {
                 Console.WriteLine("0");
                 sp.Write("1");
+                messageProcessed = true;
             }
 
             if (res.Contains(":CM#"))
             {
                 Console.WriteLine("Objects Coordinated#");
                 sp.Write("Objects Coordinated#");
+                messageProcessed = true;
             }
 
+            if (!messageProcessed) {
+                //uknown message:
+                Console.WriteLine(res);
+			}
             //sprintf(_AR_Formated_Stelarium, "%02d:%02d:%02d#", int(arHH), int(arMM), int(arSS));
             //sprintf(_DEC_Formated_Stelarium, "%c %02d %c %02d: %02d #", sDEC_tel, int(decDEG), 223, int(decMM), int(decSS));
 

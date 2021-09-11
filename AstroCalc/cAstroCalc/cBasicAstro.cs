@@ -57,34 +57,51 @@ namespace cAstroCalc
 
         //}
 
-        public static void az_al(DateTime dte, int zone_dst, Double lon, Double lat, Double ra, Double dec)
+        public ALT_AZIM_Values az_al(DateTime dte, Double ra, Double dec)
         {
+
             Double j, s;
 
             //TODO: if (epoch != 2000) nutation(dte)
 
-            s = sideral(dte, zone_dst, lon) - ra;
-
+            s = sideral(dte, this._zone, lon) - ra;
             if (s < 0) { s = s + 24; }
-            s = 15 * s;
 
+            s = 15 * s;
             //j = dsin(dec) * dsin(lat) + dcos(dec) * dcos(lat) * dcos(s);
+
             j = Math.Sin(degreeToRadian(dec)) * Math.Sin(degreeToRadian(lat)) + Math.Cos(degreeToRadian(dec)) * Math.Cos(degreeToRadian(lat)) * Math.Cos(degreeToRadian(s));
+
             //al = dasn(j);
-            al = radianToDegree(Math.Asin(j));//v radianech...-> stupne
+            al = radianToDegree(Math.Asin(j));
 
             //j = (dsin(dec) - dsin(lat) * dsin(al)) / (dcos(lat) * dcos(al));
             j = (Math.Sin(degreeToRadian(dec)) - Math.Sin(degreeToRadian(lat)) * Math.Sin(degreeToRadian(al))) / (Math.Cos(degreeToRadian(lat)) * Math.Cos(degreeToRadian(al)));
+
 
             //az = dacs(j);
             az = radianToDegree(Math.Acos(j));
 
             //j = dsin(s);
             j = Math.Sin(degreeToRadian(s));
-            if (j > 0) { az = 360 - az; };
+
+            if (j > 0) { az = 360 - az; }
+
+            //Výsledky:
+            ALT_AZIM_Values alt_Azim_Values = new ALT_AZIM_Values();
+            alt_Azim_Values.ALt = al;
+            alt_Azim_Values.Azim = az;
+            return alt_Azim_Values;
 
         }
-
+        
+        /// <summary>
+        /// Metoda vrací pro daný čas (TimeNow) a AZ-ALT souřadnice --> RA DEC souřadnice
+        /// </summary>
+        /// <param name="dte"></param>
+        /// <param name="az"></param>
+        /// <param name="al"></param>
+        /// <returns></returns>
         public Ra_Dec_Values ra_dec(DateTime dte, Double az, Double al)
         {
             Double j, s;
@@ -238,4 +255,11 @@ namespace cAstroCalc
         public Double RA { get; set; }
         public Double DEC { get; set; }
     }
+
+    public class ALT_AZIM_Values
+    {
+        public Double ALt { get; set; }
+        public Double Azim { get; set; }
+    }
+
 }
