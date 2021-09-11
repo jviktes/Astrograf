@@ -3,10 +3,17 @@
 // Define pin connections & motor's steps per revolution
 const int dirPin = 2;
 const int stepPin = 3;
- int stepsPerRevolution = 1600; //200 = pro nastaveni MS1=0, MS2=0, MS3=0
+
+const int stepsPerRevolution = 1600; //200 = pro nastaveni MS1=0, MS2=0, MS3=0
 const int transmittionRate = 1; //toto je pro prevod na vystupu
+
 const int stepDelay = 5400; //5.4s = 5400ms = 5400 000 milisec
 const int delayPause = 2700000;
+
+int incomingByte = 0; // for incoming serial data
+String a;
+
+double actualAngle;
 
 void setup()
 {
@@ -17,75 +24,70 @@ void setup()
   pinMode(6, OUTPUT); //Enable
   digitalWrite(6,LOW);   
 
-    // Set motor direction clockwise
-  digitalWrite(dirPin, HIGH);
-
   Serial.println("Start...");
 
-  // Spin motor slowly
+  //aktualni azimut uhlu je např.
+  actualAngle = 45.50;
 
-  //potrebuju natočit motor o několik stupnu:
-  //vstupy: aktualni uhel, rychlost, smer
-  
-  for(int x = 0; x < stepsPerRevolution*transmittionRate; x++)
-  {
-    Serial.println(x);
-    digitalWrite(stepPin, HIGH);
-    //delayMicroseconds(delayPause);
-    delay(10);
-    digitalWrite(stepPin, LOW);
-    //delayMicroseconds(delayPause);delay(2700);
-    delay(10);
-  }
   Serial.println("End...");
   delay(1000); // Wait a second
   
 }
 
-void MoveTo(int numberSteps) {
+int GetNumberOfSteps (double actualAngle,double destinationAngle ) {
+   int numberSteps;
+ 
+  double uhlovyRozdil = destinationAngle-actualAngle;
 
-  for(int x = 0; x < stepsPerRevolution*transmittionRate; x++)
-  {
-    Serial.println(x);
-    digitalWrite(stepPin, HIGH);
-    //delayMicroseconds(delayPause);
-    delay(10);
-    digitalWrite(stepPin, LOW);
-    //delayMicroseconds(delayPause);delay(2700);
-    delay(10);
+  numberSteps = uhlovyRozdil*stepsPerRevolution*transmittionRate/360; //TODO umi to prevest na int?
+  return abs(numberSteps);
+}
+
+void MoveTo(int numberSteps, int delaySpeed, bool isClockWiseDirection) {
+  Serial.println("MoveTo start:");
+  
+  if (isClockWiseDirection) {
+      digitalWrite(dirPin, HIGH);
+  }
+  else {
+    digitalWrite(dirPin, LOW);  
   }
   
+  for(int x = 0; x < numberSteps; x++)
+  {
+    //Serial.println(x);
+    digitalWrite(stepPin, HIGH);
+    delay(delaySpeed); //TODO: mozna tohle bude lepsi pouzit? delayMicroseconds(delayPause);
+    digitalWrite(stepPin, LOW);
+    delay(delaySpeed);
+  }
+  Serial.println("MoveTo end");
 }
 
 void loop()
 {
-//  // Set motor direction clockwise
-//  digitalWrite(dirPin, HIGH);
-//
-//  // Spin motor slowly
-//  stepsPerRevolution=200;
-//  for(int x = 0; x < stepsPerRevolution*transmittionRate; x++)
-//  {
-//    Serial.println("Krok c.:"+x);
-//    digitalWrite(stepPin, HIGH);
-//    //delayMicroseconds(delayPause);
-//    delay(100);
-//    digitalWrite(stepPin, LOW);
-//    //delayMicroseconds(delayPause);delay(2700);
-//    delay(100);
-//  }
-//  delay(1000); // Wait a second
   
-  // Set motor direction counterclockwise
-  //digitalWrite(dirPin, LOW);
+int delaySpeed = 10;
 
-  // Spin motor quickly
-//  for(int x = 0; x < stepsPerRevolution; x++)
-//  {
-//    digitalWrite(stepPin, HIGH);
-//    delayMicroseconds(500);
-//    digitalWrite(stepPin, LOW);
-//    delayMicroseconds(500);
-//  }
-  //delay(1000); // Wait a second
+while(Serial.available()) {
+  a= Serial.readString();// read the incoming data as string
+  Serial.println(a);
+  double requiredAngle = a.toDouble();
+
+  
+  double destinationAngle = requiredAngle;
+  bool isClockWiseDirection = true;
+  if ((destinationAngle-actualAngle)<0) {
+    isClockWiseDirection = false;
+  }
+  int numberSteps = GetNumberOfSteps(actualAngle,requiredAngle);
+  Serial.println("Parametry pohybu: numberSteps"+String(numberSteps)+"|actualAngle:"+String(actualAngle)+"|requiredAngle:"+String(requiredAngle)+"|isClockWiseDirection:"+String(isClockWiseDirection));
+  
+  MoveTo(numberSteps,delaySpeed,isClockWiseDirection);
+  
+  actualAngle=destinationAngle;
+  Serial.println("Moving succesfull: actualangle = "+String(actualAngle));
+}
+
+//delay(1000); // Wait a second
 }
