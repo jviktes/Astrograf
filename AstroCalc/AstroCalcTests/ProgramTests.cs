@@ -93,9 +93,14 @@ namespace AstroCalc.Tests
             int dst = -1;
             cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
             
-            Double test_azimutVal = 233.0000 + 41/60+27/3600;
-            Double test_altVal = 48.0000 + 7 / 60 + 18 / 3600;
-            Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, test_azimutVal, test_altVal); 
+            //Double test_azimutVal = 119.0000 + 11.0000/60+27.0000/3600;
+            //Double test_altVal = 32 + 26.0000 / 60 + 18.0000 / 3600;
+
+            Double test_azimutVal = 25.0000 + 12.0000 / 60 + 19.0000 / 36000;
+            Double test_altVal = 11.0000 + 53.0000 / 60 + 23.0000 / 3600;
+
+            Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, test_azimutVal, test_altVal);
+            ALT_AZIM_Values az_al = cBasicAstroData.az_al(DateTime.Now, ra_Dec_Values.RA, ra_Dec_Values.DEC);
 
         }
     }

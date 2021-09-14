@@ -1,4 +1,5 @@
-﻿using System;
+﻿using cAstroCalc;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -17,10 +18,13 @@ namespace ArduinoSerialLink
 
         static SerialPort mySerialPort;
         
+
+        static int fakeAzimutAngle = 0;
+
         public ArduinoWork(string portName)
         {
             Console.WriteLine("Arduino serial link starting...");
-            
+            fakeAzimutAngle = 0;
             mySerialPort = new SerialPort("COM3");
 
             string[] seznamPortu = SerialPort.GetPortNames();
@@ -90,6 +94,29 @@ namespace ArduinoSerialLink
             Console.WriteLine();
         }
         
+        public static void SettingData(Double userLatitude, Double userLongtitude, int zone, int dst , Double ra , Double dec) {
+
+            while(true) {
+                cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
+                ALT_AZIM_Values aLT_AZIM_Values = cBasicAstroData.az_al(DateTime.Now, ra, dec);
+                String stepMottorCmd = $"AZ:{Math.Round((Double)aLT_AZIM_Values.Azim, 4)}|ALT:{Math.Round((Double)aLT_AZIM_Values.ALt, 4)}";
+                mySerialPort.WriteLine(stepMottorCmd);
+
+                //fakeAzimutAngle++;
+                //if (fakeAzimutAngle>360) {
+                //    fakeAzimutAngle = 1;
+                //}
+                //mySerialPort.WriteLine($"{fakeAzimutAngle}");
+
+                Console.WriteLine(stepMottorCmd);
+                
+                Thread.Sleep(1000);
+            }
+
+            
+
+        }
+
     }
 
     /// <summary>

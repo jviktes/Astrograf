@@ -15,14 +15,17 @@ namespace AstroCalc
 
         //GSM poloha = konstanty
         //LBC:
-        public static double LAT_degree = 50.7751814;
-        public static double LONG_degree = 15.005;
+
+        public static  double userLatitude = 50.76777777777777;
+        public static double userLongtitude = 15.079166666666666;
+        public static int zone = -1;
+        public static int dst = -1;
 
         static void Main(string[] args)
         {
 
             Console.WriteLine("Hello World!");
-            SerialPort mySerialPort = new SerialPort("COM1");
+            SerialPort mySerialPort = new SerialPort("COM1"); //tento port je pro komunikaci mezi Stelarium a touto konzovou aplikaci
 
             string[] seznamPortu = SerialPort.GetPortNames();
 
@@ -40,62 +43,41 @@ namespace AstroCalc
 
             Console.WriteLine();
 
-
+            // tento port je pro komunikaci mezi Arduinem (vraci hodnoty potencimetru):
             ArduinoWork arduinoWork = new ArduinoWork("COM3");
-            Thread thread1 = new Thread(ArduinoWork.LoadingData);
-            thread1.Start();
+			Thread thread1 = new Thread(ArduinoWork.LoadingData);
+			thread1.Start();
 
+			//Double azimutStar = 25.0000 + 12.0000 / 60 + 19.0000 / 36000;
+			//         Double altStar = 11.0000 + 53.0000 / 60 + 23.0000 / 3600;
 
-            //vstupy: pozice objektu na hvezdne obloze:
-            //Polárka:
-            //double OBJECT_RA_deg = 37.963976;
-            //double OBJECT_DEC_deg = 89.264298;
+			//         cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
 
-            //Venuse:
-            //double OBJECT_RA_deg = 126.804315;
-            //double OBJECT_DEC_deg = 20.814702;
+			Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
+			Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
 
-            //Hvezda CAS Schedir:
-            double OBJECT_RA_deg = 10.127361*15;
-            double OBJECT_DEC_deg = 56.537339;
-
-            CoordinatesObject _object = new CoordinatesObject(OBJECT_RA_deg, OBJECT_DEC_deg, LAT_degree, LONG_degree);
-
-            while (!(Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)) {
-                //cas je v UTC a se započtením letního času --> lokální čas je 20:35, ale nastavuju 18:35
-                //ve Stellariu: mám čas 19:35, bez daylight saving a +1UTC
-                DateTime localDateTime = new DateTime(2021, 7, 5, 18, 35, 0);//DateTime.UtcNow;//new DateTime(1998,8,10,23,10,0) ;//DateTime.UtcNow;
-                _object.GetCurrentAstroData(localDateTime);
-                Console.WriteLine(DateTime.Now);
-                Console.WriteLine($"Souradnice objektu jsou ALT= {_object.Alt_H}:{_object.Alt_M}:{_object.Alt_S}");
-                Console.WriteLine($"Souradnice objektu jsou Azim= {_object.Azim_H}:{_object.Azim_M}:{_object.Azim_S}");
-                Thread.Sleep(1000);
-                
-            }
+			Thread thread2 = new Thread(() => ArduinoWork.SettingData(userLatitude, userLongtitude, zone, dst, raStar, decStar));
+            thread2.Start();
 
             Console.ReadKey();
             mySerialPort.Close();
             
         }
 
-        private static void DataReceivedHandler(
-            object sender,
-            SerialDataReceivedEventArgs e)
-        {
+        private static void DataReceivedHandler(object sender,SerialDataReceivedEventArgs e){
+            
             SerialPort sp = (SerialPort)sender;
-
-
             if (!sp.IsOpen) return;
             int bytes = sp.BytesToRead;
             byte[] buffer = new byte[bytes];
             sp.Read(buffer, 0, bytes);
-
+            
             //https://www.meade.com/support/LX200CommandSet.pdf
             //https://astro-physics.info/tech_support/mounts/command_lang.htm
 
             string res = Encoding.UTF8.GetString(buffer);
 
-            Console.WriteLine(res);
+            Console.WriteLine($"DataReceiverd:{res}");
 
             //:GR# Get Telescope RA
             //Returns: HH: MM.T# or HH:MM:SS#
@@ -112,7 +94,6 @@ namespace AstroCalc
             //String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
             //Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
 
-
             //simulace nějakého natočení teleskopu v nějaký čas:
             Double azimutVal = 319;
             Double altVal = 20;
@@ -128,7 +109,7 @@ namespace AstroCalc
             int zone = -1;
             int dst = -1;
 
-            LAT_degree = 52;
+            //LAT_degree = 52;
 
             cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
             Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, azimutVal, altVal); //CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree));

@@ -64,7 +64,9 @@ namespace cAstroCalc
 
             //TODO: if (epoch != 2000) nutation(dte)
 
-            s = sideral(dte, this._zone, lon) - ra;
+            //něco tu je špatně:
+
+            s = sideral(dte, this._zone+this._dst, lon) - ra;
             if (s < 0) { s = s + 24; }
 
             s = 15 * s;
@@ -96,7 +98,7 @@ namespace cAstroCalc
         }
         
         /// <summary>
-        /// Metoda vrací pro daný čas (TimeNow) a AZ-ALT souřadnice --> RA DEC souřadnice
+        /// Metoda vrací pro daný čas (TimeNow) + AZ-ALT souřadnice --> RA DEC souřadnice
         /// </summary>
         /// <param name="dte"></param>
         /// <param name="az"></param>
