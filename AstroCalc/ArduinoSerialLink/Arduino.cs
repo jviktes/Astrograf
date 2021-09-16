@@ -119,90 +119,90 @@ namespace ArduinoSerialLink
 
     }
 
-    /// <summary>
-    /// Tato aplikace čte hodnoty z Arduno, ze seriove linky, 
-    /// </summary>
-    class Arduino
-    {
+	/// <summary>
+	/// Tato aplikace čte hodnoty z Arduno, ze seriove linky, 
+	/// </summary>
+	class Arduino
+	{
 
-        public static void Main()
-        {
-            ArduinoWork arduinoWork = new ArduinoWork("COM3");
-            Thread thread1 = new Thread(ArduinoWork.LoadingData);
-            thread1.Start();
+		public static void Main()
+		{
+			ArduinoWork arduinoWork = new ArduinoWork("COM3");
+			Thread thread1 = new Thread(ArduinoWork.LoadingData);
+			thread1.Start();
 
-            while(true)
-            {
-                String _value = ArduinoWork.AzimutActualValueFromArduino;
-                //Console.WriteLine(_value);
-                Thread.Sleep(500);
-            }
-            Console.ReadKey();
-        }
+			while (true)
+			{
+				String _value = ArduinoWork.AzimutActualValueFromArduino;
+				//Console.WriteLine(_value);
+				Thread.Sleep(500);
+			}
+			Console.ReadKey();
+		}
 
 
-        //static void Main(string[] args)
-        //{
-        //    String rr;
-        //    NewMethod(out rr);
+		//static void Main(string[] args)
+		//{
+		//    String rr;
+		//    NewMethod(out rr);
 
-        //    string returnValue = null;
-        //    new Thread(
-        //       () =>
-        //       {
-        //           returnValue = test();
-        //       }).Start();
-        //    Console.WriteLine(returnValue);
-        //    Console.ReadKey();
+		//    string returnValue = null;
+		//    new Thread(
+		//       () =>
+		//       {
+		//           returnValue = test();
+		//       }).Start();
+		//    Console.WriteLine(returnValue);
+		//    Console.ReadKey();
 
-        //}
+		//}
 
-        private static void NewMethod(out String tt)
-        {
-            Console.WriteLine("Hello World!");
-            SerialPort mySerialPort;
-            mySerialPort = new SerialPort("COM3");
+		private static void NewMethod(out String tt)
+		{
+			Console.WriteLine("Hello World!");
+			SerialPort mySerialPort;
+			mySerialPort = new SerialPort("COM3");
 
-            string[] seznamPortu = SerialPort.GetPortNames();
+			string[] seznamPortu = SerialPort.GetPortNames();
 
-            mySerialPort.BaudRate = 9600;
-            mySerialPort.Parity = Parity.None;
-            mySerialPort.StopBits = StopBits.One;
-            mySerialPort.DataBits = 8;
-            mySerialPort.Handshake = Handshake.None;
-            mySerialPort.Open();
+			mySerialPort.BaudRate = 9600;
+			mySerialPort.Parity = Parity.None;
+			mySerialPort.StopBits = StopBits.One;
+			mySerialPort.DataBits = 8;
+			mySerialPort.Handshake = Handshake.None;
+			mySerialPort.Open();
 
-            while (true)
-            {
-                int bytes = mySerialPort.BytesToRead;
-                byte[] buffer = new byte[bytes];
-                mySerialPort.Read(buffer, 0, bytes);
+			while (true)
+			{
+				int bytes = mySerialPort.BytesToRead;
+				byte[] buffer = new byte[bytes];
+				mySerialPort.Read(buffer, 0, bytes);
 
-                string res = Encoding.UTF8.GetString(buffer);
+				string res = Encoding.UTF8.GetString(buffer);
 
-                //parsing value:
-                string[] parVal = res.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+				//parsing value:
+				string[] parVal = res.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (parVal.Length > 0)
-                {
-                    //buffer obsahuje plno hodnot (arduino posílá po 100ms), beru tu poslední
-                    //Console.WriteLine($"{DateTime.Now}: {parVal.Last()}");
-                    tt =parVal.Last();
-                }
-                else
-                {
+				if (parVal.Length > 0)
+				{
+					//buffer obsahuje plno hodnot (arduino posílá po 100ms), beru tu poslední
+					//Console.WriteLine($"{DateTime.Now}: {parVal.Last()}");
+					tt = parVal.Last();
+				}
+				else
+				{
 
-                }
+				}
 
-                Thread.Sleep(200);
+				Thread.Sleep(200);
 
-            }
+			}
 
-            Console.WriteLine("Press any key to continue...");
+			Console.WriteLine("Press any key to continue...");
 
-            mySerialPort.Write("Setup OK");
+			mySerialPort.Write("Setup OK");
 
-            Console.WriteLine();
-        }
-    }
+			Console.WriteLine();
+		}
+	}
 }

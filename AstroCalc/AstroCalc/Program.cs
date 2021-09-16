@@ -48,16 +48,11 @@ namespace AstroCalc
 			Thread thread1 = new Thread(ArduinoWork.LoadingData);
 			thread1.Start();
 
-			//Double azimutStar = 25.0000 + 12.0000 / 60 + 19.0000 / 36000;
-			//         Double altStar = 11.0000 + 53.0000 / 60 + 23.0000 / 3600;
+			//Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
+			//Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
 
-			//         cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
-
-			Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
-			Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
-
-			Thread thread2 = new Thread(() => ArduinoWork.SettingData(userLatitude, userLongtitude, zone, dst, raStar, decStar));
-            thread2.Start();
+			//Thread thread2 = new Thread(() => ArduinoWork.SettingData(userLatitude, userLongtitude, zone, dst, raStar, decStar));
+            //thread2.Start();
 
             Console.ReadKey();
             mySerialPort.Close();
@@ -79,24 +74,24 @@ namespace AstroCalc
 
             Console.WriteLine($"DataReceiverd:{res}");
 
-            //:GR# Get Telescope RA
-            //Returns: HH: MM.T# or HH:MM:SS#
-            //Depending which precision is set for the telescope
+			//:GR# Get Telescope RA
+			//Returns: HH: MM.T# or HH:MM:SS#
+			//Depending which precision is set for the telescope
 
-            //:GD# Get Telescope Declination.
-            // Returns: sDD*MM# or sDD*MM’SS#
-            //Depending upon the current precision setting for the telescope. 
-            //AR03: 36:55#txDEC+86?08:57#
+			//:GD# Get Telescope Declination.
+			// Returns: sDD*MM# or sDD*MM’SS#
+			//Depending upon the current precision setting for the telescope. 
+			//AR03: 36:55#txDEC+86?08:57#
 
-            //Fuknční načítání dat z Arduina:
-            //String _azimutValueFromArduino = ArduinoWork.AzimutActualValueFromArduino;
-            //Double.TryParse(_azimutValueFromArduino.Replace('.',','), out Double azimutVal);
-            //String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
-            //Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
+			//Fuknční načítání dat z Arduina:
+			String _azimutValueFromArduino = ArduinoWork.AzimutActualValueFromArduino;
+			Double.TryParse(_azimutValueFromArduino.Replace('.', ','), out Double azimutVal);
+			String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
+			Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
 
-            //simulace nějakého natočení teleskopu v nějaký čas:
-            Double azimutVal = 319;
-            Double altVal = 20;
+			//simulace nějakého natočení teleskopu v nějaký čas:
+			//Double azimutVal = 319;
+   //         Double altVal = 20;
 
             //zde nějak získám hodnoty azimutu a alt z arduino potenciometrů:
             //=> potrebuju prevod z alt-azim na ra-dec souřadnice:
