@@ -10,192 +10,172 @@ using System.Threading.Tasks;
 
 namespace AstroCalc
 {
+    //Nastavení typu ovládání:
+    public enum eTelescopeControlling
+    {
+        ReadingDataFromTelescope=1, //načítá natočení os z arduina a ty se pak zobrazují ve Stelariu jako telescope
+        ControllingTelescope = 2, //pro dané souřadnice objektu (ra,dec) posílá azimutální souřadnice do arduinaStepMotor, které natáčí motorkama
+    }
+
     public class Program
     {
 
         //GSM poloha = konstanty
-        //LBC:
 
-        public static  double userLatitude = 50.76777777777777;
-        public static double userLongtitude = 15.079166666666666;
-        public static int zone = -1;
-        public static int dst = -1;
+        //LBC souřadnice:
+        public static double USER_LATITUDE = 50.76777777777777;
+        public static double USER_LONGTITUDE = 15.079166666666666;
+
+        //Nastavení časové zony a Daylight, DST bude nutno měnit podle letního/zimního času:
+        public static int ZONE = -1;
+        public static int DST = -1;
+
+        public static eTelescopeControlling eTelescopeControlling;
 
         static void Main(string[] args)
         {
 
-            Console.WriteLine("Hello World!");
-            SerialPort mySerialPort = new SerialPort("COM1"); //tento port je pro komunikaci mezi Stelarium a touto konzovou aplikaci
+            Console.WriteLine("AstroCalc starting...");
 
-            string[] seznamPortu = SerialPort.GetPortNames();
+            SerialPort stelariumVirtualPort = new SerialPort("COM1"); //tento port je pro komunikaci mezi Stelarium a touto konzovou aplikaci
 
-            mySerialPort.BaudRate = 9600;
-            mySerialPort.Parity = Parity.None;
-            mySerialPort.StopBits = StopBits.One;
-            mySerialPort.DataBits = 8;
-            mySerialPort.Handshake = Handshake.None;
-            mySerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
-            mySerialPort.Open();
+            stelariumVirtualPort.BaudRate = 9600;
+            stelariumVirtualPort.Parity = Parity.None;
+            stelariumVirtualPort.StopBits = StopBits.One;
+            stelariumVirtualPort.DataBits = 8;
+            stelariumVirtualPort.Handshake = Handshake.None;
 
-            Console.WriteLine("Press any key to continue...");
+            stelariumVirtualPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedFromStelariumHandler);
+            stelariumVirtualPort.Open();
 
-            mySerialPort.Write("Setup OK");
+            Console.WriteLine("Stelarium port created.");
 
-            Console.WriteLine();
+            //Nastavení typu ovládání:
+            eTelescopeControlling = eTelescopeControlling.ReadingDataFromTelescope;
 
             // tento port je pro komunikaci mezi Arduinem (vraci hodnoty potencimetru):
-            ArduinoWork arduinoWork = new ArduinoWork("COM3");
-			Thread thread1 = new Thread(ArduinoWork.LoadingData);
-			thread1.Start();
+            ArduinoTelescope arduinoTelescope = new ArduinoTelescope("COM3");
 
-			//Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
-			//Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
+            switch (eTelescopeControlling)
+            {
+                case eTelescopeControlling.ReadingDataFromTelescope:
+                    Thread thread1 = new Thread(arduinoTelescope.LoadingData);
+                    thread1.Start();
+                    break;
+                case eTelescopeControlling.ControllingTelescope:
 
-			//Thread thread2 = new Thread(() => ArduinoWork.SettingData(userLatitude, userLongtitude, zone, dst, raStar, decStar));
-            //thread2.Start();
+                    //toto jsou souřadnice objektu, na který se bude dalekohled zaměřovat:
+                    Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
+                    Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
+
+                    Thread thread2 = new Thread(() => arduinoTelescope.SettingData(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, raStar, decStar));
+                    thread2.Start();
+                    break;
+                default:
+                    break;
+            }
 
             Console.ReadKey();
-            mySerialPort.Close();
+            stelariumVirtualPort.Close();
             
         }
 
-        private static void DataReceivedHandler(object sender,SerialDataReceivedEventArgs e){
+        /// <summary>
+        /// Handler pro zpracování došlých dat ze Stelaria, formát je Meade LX200          
+        ///https://www.meade.com/support/LX200CommandSet.pdf
+        ///https://astro-physics.info/tech_support/mounts/command_lang.htm
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void DataReceivedFromStelariumHandler(object sender,SerialDataReceivedEventArgs e){
             
-            SerialPort sp = (SerialPort)sender;
-            if (!sp.IsOpen) return;
-            int bytes = sp.BytesToRead;
+            SerialPort _stelariumVirtualPort = (SerialPort)sender;
+            if (!_stelariumVirtualPort.IsOpen) return;
+            int bytes = _stelariumVirtualPort.BytesToRead;
             byte[] buffer = new byte[bytes];
-            sp.Read(buffer, 0, bytes);
-            
-            //https://www.meade.com/support/LX200CommandSet.pdf
-            //https://astro-physics.info/tech_support/mounts/command_lang.htm
+            _stelariumVirtualPort.Read(buffer, 0, bytes);
 
-            string res = Encoding.UTF8.GetString(buffer);
+            string requestFromStelarium = Encoding.UTF8.GetString(buffer);
 
-            Console.WriteLine($"DataReceiverd:{res}");
+            Console.WriteLine($"DataReceived:{requestFromStelarium}");
 
-			//:GR# Get Telescope RA
-			//Returns: HH: MM.T# or HH:MM:SS#
-			//Depending which precision is set for the telescope
+			//Fuknční načítání dat (natočení uhlů potenciometrů) z Arduina:
+			String _azimutValueFromArduino = ArduinoTelescope.AzimutActualValueFromArduino;
+			Double.TryParse(_azimutValueFromArduino.Replace('.', ','), out Double azimutTelescopeValue);
+			String _altValueFromArduino = ArduinoTelescope.AltActualValueFromArduino;
+			Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altTelescopeValue);
 
-			//:GD# Get Telescope Declination.
-			// Returns: sDD*MM# or sDD*MM’SS#
-			//Depending upon the current precision setting for the telescope. 
-			//AR03: 36:55#txDEC+86?08:57#
-
-			//Fuknční načítání dat z Arduina:
-			String _azimutValueFromArduino = ArduinoWork.AzimutActualValueFromArduino;
-			Double.TryParse(_azimutValueFromArduino.Replace('.', ','), out Double azimutVal);
-			String _altValueFromArduino = ArduinoWork.AltActualValueFromArduino;
-			Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altVal);
-
-			//simulace nějakého natočení teleskopu v nějaký čas:
-			//Double azimutVal = 319;
-   //         Double altVal = 20;
-
-            //zde nějak získám hodnoty azimutu a alt z arduino potenciometrů:
-            //=> potrebuju prevod z alt-azim na ra-dec souřadnice:
-
-            //double azimut_arduino_degree = 283.271028;
-            //double alt_arduino_degree = 19;
-
-            double userLatitude = 50.76777777777777;
-            double userLongtitude = 15.079166666666666;
-            int zone = -1;
-            int dst = -1;
-
-            //LAT_degree = 52;
-
-            cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
-            Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, azimutVal, altVal); //CoordinatesObject.Get_Delta_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree));
-            
-            //var dec_vel_to_Stelarium_degree = CoordinatesObject.radianToDegree(_deltaTest);
-
-            //double HA = CoordinatesObject.Get_HA_from(CoordinatesObject.degreeToRadian(alt_arduino_degree), CoordinatesObject.degreeToRadian(LAT_degree), CoordinatesObject.degreeToRadian(azimut_arduino_degree), _deltaTest, userLongtitude, DateTime.Now);
-            //double tt = CoordinatesObject.radianToDegree(HA);
+            //přepočet alt-azimut souřadnic na ekvitoriální pro aktuální čas:
+            cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST);
+            Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, azimutTelescopeValue, altTelescopeValue); 
 
             double ha_ = ra_Dec_Values.RA;
             double _dec = ra_Dec_Values.DEC;
 
-            string _ra_StelariumFormat_Telecope = "";// 06:38:00#";//toto se mění --> toto bych měl načítat z arduina
-            string _dec_StelariumFormat_Telescope = "";//+54"+(char)223+"55:18#";//toto by mělo být stejné 
-
-            //arduinoValue = arduinoValue / 30; //15 = pro 1:1, ale ted mám převod že potencometr je 2x vic otáček než ozubené kolo (ozub. kolo se 2x otočí)
-            //_ra_StelariumFormat_Telecope = $"{CoordinatesObject.getHoures(arduinoValue).ToString("00")}:{CoordinatesObject.getMinutes(arduinoValue).ToString("00")}:{CoordinatesObject.getSeconds(arduinoValue).ToString("00")}#";
-
-            //string _dec_StelariumFormat_Telescope = ra_Dec_Values.DEC;//"+54"+(char)223+"55:18#";//toto by mělo být stejné 
-
             bool messageProcessed = false;
-            if (res.Contains("#:GR#"))
+            if (requestFromStelarium.Contains("#:GR#"))
             {
 
-                var hhh = CoordinatesObject.getHoures(ha_);
-                var mmm = CoordinatesObject.getMinutes(ha_);
-                var ss = CoordinatesObject.getSeconds(ha_);
-
-                //format dat  "06:38:00#";
-                _ra_StelariumFormat_Telecope =$"{CoordinatesObject.getHoures(ha_).ToString("00")}:{CoordinatesObject.getMinutes(ha_).ToString("00")}:{CoordinatesObject.getSeconds(ha_).ToString("00")}#";
-
-                sp.Write(_ra_StelariumFormat_Telecope);
+                string _ra_StelariumFormat_Telecope = get_ra_StelariumFormat(ha_);
+                _stelariumVirtualPort.Write(_ra_StelariumFormat_Telecope);
                 Console.WriteLine(_ra_StelariumFormat_Telecope);
                 messageProcessed = true;
             }
 
-            if (res.Contains(":GD#"))
+            if (requestFromStelarium.Contains(":GD#"))
             {
-                //Format dat: +54"+(char)223+"55:18#"
-                _dec_StelariumFormat_Telescope = $"+{CoordinatesObject.getHoures(_dec).ToString("00")}{(char)223}{CoordinatesObject.getMinutes(_dec).ToString("00")}:{CoordinatesObject.getSeconds(_dec).ToString("00")}#"; 
+                string _dec_StelariumFormat_Telescope = get_dec_StelariumFormat(_dec);
                 Console.WriteLine(_dec_StelariumFormat_Telescope);
-                sp.Write(_dec_StelariumFormat_Telescope);
+                _stelariumVirtualPort.Write(_dec_StelariumFormat_Telescope);
                 messageProcessed = true;
             }
 
-            if (res.Contains("Sr"))
+            if (requestFromStelarium.Contains("Sr"))
             {
                 Console.WriteLine("1");
-                sp.Write("0"); //"#:Q#:Sr05:16:42#"
+                _stelariumVirtualPort.Write("0"); //"#:Q#:Sr05:16:42#"
                 messageProcessed = true;
             }
 
-            if (res.Contains("Sd"))
+            if (requestFromStelarium.Contains("Sd"))
             {
                 Console.WriteLine("1"); //":Sd+45*59:43#"
-                sp.Write("0");
+                _stelariumVirtualPort.Write("0");
                 messageProcessed = true;
             }
-            if (res.Contains(":MS#"))
+            if (requestFromStelarium.Contains(":MS#"))
             {
                 Console.WriteLine("0");
-                sp.Write("1");
+                _stelariumVirtualPort.Write("1");
                 messageProcessed = true;
             }
 
-            if (res.Contains(":CM#"))
+            if (requestFromStelarium.Contains(":CM#"))
             {
                 Console.WriteLine("Objects Coordinated#");
-                sp.Write("Objects Coordinated#");
+                _stelariumVirtualPort.Write("Objects Coordinated#");
                 messageProcessed = true;
             }
 
             if (!messageProcessed) {
                 //uknown message:
-                Console.WriteLine(res);
+                Console.WriteLine("Uknown request from Stelarium:");
+                Console.WriteLine(requestFromStelarium);
 			}
-            //sprintf(_AR_Formated_Stelarium, "%02d:%02d:%02d#", int(arHH), int(arMM), int(arSS));
-            //sprintf(_DEC_Formated_Stelarium, "%c %02d %c %02d: %02d #", sDEC_tel, int(decDEG), 223, int(decMM), int(decSS));
 
-
-            //: sDD*MM#
-            //HandleSerialData(buffer);
-
-            //string indata = sp.ReadExisting();
-            //Console.WriteLine("Data Received:");
-            //Console.Write(indata);
-            //allDataReceived = allDataReceived + indata;
-            //callmyfunction(indata);
         }
 
+        private static string get_dec_StelariumFormat(double _dec)
+        {
+            //Format dat: +54"+(char)223+"55:18#"
+            return $"+{CoordinatesObject.getHoures(_dec).ToString("00")}{(char)223}{CoordinatesObject.getMinutes(_dec).ToString("00")}:{CoordinatesObject.getSeconds(_dec).ToString("00")}#";
+        }
 
+        private static string get_ra_StelariumFormat(double ha_)
+        {
+            //format dat  "06:38:00#"; 06:38:00#";
+            return $"{CoordinatesObject.getHoures(ha_).ToString("00")}:{CoordinatesObject.getMinutes(ha_).ToString("00")}:{CoordinatesObject.getSeconds(ha_).ToString("00")}#";
+        }
     }
 
     public class CoordinatesObject
@@ -402,38 +382,6 @@ namespace AstroCalc
         }
 
 
-        //double CalcSidrealTime(ref DateTime time, double longitude)
-        //{
-        //    int year = time.Year;
-        //    int month = time.Month;
-        //    int day = time.Day;
-        //    int hour = time.Hour;
-        //    int min = time.Minute;
-        //    int second = time.Second;
-
-        //    if (month == 1 || month == 2)
-        //    {
-        //        year--;
-        //        month += 12;
-        //    }
-
-        //    int a, b, c, d;
-        //    a = (int)System.Math.Floor(year / 100.0);
-        //    b = 2 - a + (int)System.Math.Floor(a / 4.0);
-        //    c = (int)System.Math.Floor(365.25 * year);
-        //    d = (int)System.Math.Floor(30.6001 * (month + 1));
-
-        //    double jd, jt, mst = 0;
-
-        //    // calc the number of Julian days since J2000.0
-        //    jd = b + c + d - 730550.5 + day + HourMinSecToDouble(hour, min, second) / 24.0;
-
-        //    // calc the number of Julian centuries since J2000.0
-        //    jt = jd / 36525.0;
-
-        //    return mst;
-        //}
-
         /// <summary>
         /// 
         /// </summary>
@@ -480,14 +428,6 @@ namespace AstroCalc
             this.LST_S = getSeconds(_LST/15);
 
             //return coordinatesObject;
-        }
-
-        /// <summary>
-        /// vstupy jsou alt a azimut, výstupy jsou 
-        /// </summary>
-        public void TransformHorizontalToEquitorial()
-        {
-
         }
 
         public static double getHoures(double _degree)

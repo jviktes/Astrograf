@@ -9,37 +9,33 @@ using System.Threading.Tasks;
 
 namespace ArduinoSerialLink
 {
-        
 
-    public class ArduinoWork
+    public class ArduinoTelescope
     {
         public static String AzimutActualValueFromArduino;
         public static String AltActualValueFromArduino;
 
         static SerialPort mySerialPort;
-        
 
-        static int fakeAzimutAngle = 0;
-
-        public ArduinoWork(string portName)
+        public ArduinoTelescope(string portName)
         {
-            Console.WriteLine("Arduino serial link starting...");
-            fakeAzimutAngle = 0;
-            mySerialPort = new SerialPort("COM3");
+            Console.WriteLine($"Arduino serial link starting on port: {portName}...");
 
-            string[] seznamPortu = SerialPort.GetPortNames();
-
+            mySerialPort = new SerialPort(portName);
             mySerialPort.BaudRate = 9600;
             mySerialPort.Parity = Parity.None;
             mySerialPort.StopBits = StopBits.One;
             mySerialPort.DataBits = 8;
             mySerialPort.Handshake = Handshake.None;
             mySerialPort.Open();
+
         }
 
-        public static void LoadingData()
+        /// <summary>
+        /// Smyčka neustále načítající data z Telescope Arduina:
+        /// </summary>
+        public void LoadingData()
         {
- 
 
             while (true)
             {
@@ -64,7 +60,6 @@ namespace ArduinoSerialLink
 
 						string[] azAltRawData = parVal.Last().Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 						string azimutRaw = azAltRawData[0].Replace("az:", "");
-
 
 						string altRaw = azAltRawData[1].Replace("al:", "");
 
@@ -94,7 +89,16 @@ namespace ArduinoSerialLink
             Console.WriteLine();
         }
         
-        public static void SettingData(Double userLatitude, Double userLongtitude, int zone, int dst , Double ra , Double dec) {
+        /// <summary>
+        /// Smyčka neustále nastavující uhly pro MotorArdino:
+        /// </summary>
+        /// <param name="userLatitude"></param>
+        /// <param name="userLongtitude"></param>
+        /// <param name="zone"></param>
+        /// <param name="dst"></param>
+        /// <param name="ra"></param>
+        /// <param name="dec"></param>
+        public void SettingData(Double userLatitude, Double userLongtitude, int zone, int dst , Double ra , Double dec) {
 
             while(true) {
                 cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
@@ -118,91 +122,4 @@ namespace ArduinoSerialLink
         }
 
     }
-
-	/// <summary>
-	/// Tato aplikace čte hodnoty z Arduno, ze seriove linky, 
-	/// </summary>
-	class Arduino
-	{
-
-		public static void Main()
-		{
-			ArduinoWork arduinoWork = new ArduinoWork("COM3");
-			Thread thread1 = new Thread(ArduinoWork.LoadingData);
-			thread1.Start();
-
-			while (true)
-			{
-				String _value = ArduinoWork.AzimutActualValueFromArduino;
-				//Console.WriteLine(_value);
-				Thread.Sleep(500);
-			}
-			Console.ReadKey();
-		}
-
-
-		//static void Main(string[] args)
-		//{
-		//    String rr;
-		//    NewMethod(out rr);
-
-		//    string returnValue = null;
-		//    new Thread(
-		//       () =>
-		//       {
-		//           returnValue = test();
-		//       }).Start();
-		//    Console.WriteLine(returnValue);
-		//    Console.ReadKey();
-
-		//}
-
-		private static void NewMethod(out String tt)
-		{
-			Console.WriteLine("Hello World!");
-			SerialPort mySerialPort;
-			mySerialPort = new SerialPort("COM3");
-
-			string[] seznamPortu = SerialPort.GetPortNames();
-
-			mySerialPort.BaudRate = 9600;
-			mySerialPort.Parity = Parity.None;
-			mySerialPort.StopBits = StopBits.One;
-			mySerialPort.DataBits = 8;
-			mySerialPort.Handshake = Handshake.None;
-			mySerialPort.Open();
-
-			while (true)
-			{
-				int bytes = mySerialPort.BytesToRead;
-				byte[] buffer = new byte[bytes];
-				mySerialPort.Read(buffer, 0, bytes);
-
-				string res = Encoding.UTF8.GetString(buffer);
-
-				//parsing value:
-				string[] parVal = res.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-				if (parVal.Length > 0)
-				{
-					//buffer obsahuje plno hodnot (arduino posílá po 100ms), beru tu poslední
-					//Console.WriteLine($"{DateTime.Now}: {parVal.Last()}");
-					tt = parVal.Last();
-				}
-				else
-				{
-
-				}
-
-				Thread.Sleep(200);
-
-			}
-
-			Console.WriteLine("Press any key to continue...");
-
-			mySerialPort.Write("Setup OK");
-
-			Console.WriteLine();
-		}
-	}
 }
