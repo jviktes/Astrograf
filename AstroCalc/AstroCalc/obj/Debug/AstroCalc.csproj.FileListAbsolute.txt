@@ -12,9 +12,11 @@ E:\Dropbox\Astrograf\AstroCalc\AstroCalc\obj\Debug\AstroCalc.csproj.AssemblyRefe
 E:\Dropbox\Astrograf\AstroCalc\AstroCalc\obj\Debug\AstroCalc.csproj.CoreCompileInputs.cache
 E:\Dropbox\Astrograf\AstroCalc\AstroCalc\obj\Debug\AstroCalc.exe
 E:\Dropbox\Astrograf\AstroCalc\AstroCalc\obj\Debug\AstroCalc.pdb
-e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.exe
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.pdb
-e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.exe.config
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\obj\Debug\AstroCalc.csproj.CopyComplete
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\cAstroCalc.dll
 e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\cAstroCalc.pdb
+e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.dll
+e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\ArduinoSerialLink.dll.config
+e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\log4net.dll
+e:\Dropbox\Astrograf\AstroCalc\AstroCalc\bin\Debug\log4net.xml

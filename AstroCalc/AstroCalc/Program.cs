@@ -34,7 +34,7 @@ namespace AstroCalc
         public static int ZONE = -1;
         public static int DST = -1;
 
-        public static eTelescopeControlling eTelescopeControlling;
+        //public static eTelescopeControlling eTelescopeControlling;
 
         static void Main(string[] args)
         {
@@ -55,36 +55,26 @@ namespace AstroCalc
 
             Console.WriteLine("Stelarium port created.");
 
-
             //TODO:
             //zde je nutné udělat logiku, např. pokud ve Stelariu zaměřím objekt, tak se přepne režim a začnu objekt sledovat...atd.
             //nebo mít 2 arduina, které by nezávisle pracovaly na sobě (ArduinoPotencimetr a ArduinoStepMotor, nebo by to šlo najednou?
             //Nastavení typu ovládání:
-            eTelescopeControlling = eTelescopeControlling.ReadingDataFromTelescope;
+            //eTelescopeControlling = eTelescopeControlling.ReadingDataFromTelescope;
 
             // tento port je pro komunikaci mezi Arduinem (vraci hodnoty potencimetru):
             ArduinoTelescope arduinoTelescope = new ArduinoTelescope("COM3");
 
-            switch (eTelescopeControlling)
-            {
-                case eTelescopeControlling.ReadingDataFromTelescope:
-                    Thread thread1 = new Thread(arduinoTelescope.LoadingData);
-                    thread1.Start();
-                    break;
-                case eTelescopeControlling.ControllingTelescope:
+            //Arduino pro rizeni motorku:
+            ArduinoStepMotorController arduinoStepMottor = new ArduinoStepMotorController("COM4");
+            
+            //Toto je Destination objekt, pokud nebude roven 0, pak se vlaknem bude volat každou sekundu příkaz na pootočení motorků:
+			Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
+			Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
 
-                    //toto jsou souřadnice objektu, na který se bude dalekohled zaměřovat:
-                    Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
-                    Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
-
-                    Thread thread2 = new Thread(() => arduinoTelescope.SettingData(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, raStar, decStar));
-                    thread2.Start();
-                    break;
-                default:
-                    break;
-            }
-
-            Console.ReadKey();
+			Thread thread2 = new Thread(() => arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, raStar, decStar));
+            thread2.Start();
+            
+			Console.ReadKey();
             stelariumVirtualPort.Close();
             
         }
@@ -106,13 +96,14 @@ namespace AstroCalc
 
             string requestFromStelarium = Encoding.UTF8.GetString(buffer);
 
-            Console.WriteLine($"DataReceived:{requestFromStelarium}");
+            Console.WriteLine($"{DateTime.Now} DataFromStelarium:{requestFromStelarium}");
+            log.Debug($"{DateTime.Now} DataFromStelarium:{requestFromStelarium}");
 
-			//Fuknční načítání dat (natočení uhlů potenciometrů) z Arduina:
-			String _azimutValueFromArduino = ArduinoTelescope.AzimutActualValueFromArduino;
-			Double.TryParse(_azimutValueFromArduino.Replace('.', ','), out Double azimutTelescopeValue);
-			String _altValueFromArduino = ArduinoTelescope.AltActualValueFromArduino;
-			Double.TryParse(_altValueFromArduino.Replace('.', ','), out Double altTelescopeValue);
+            //Fuknční načítání dat (natočení uhlů potenciometrů) z Arduina, pokud neni pripojen Telescope, pak to vraci 0.0000.
+            Double azimutTelescopeValue = ArduinoTelescope.AzimutTelescopeValue;
+            Double altTelescopeValue = ArduinoTelescope.AltTelescopeValue;
+
+            //log.Debug($"Data from arduinoPotenciometres:azimutTelescopeValue({azimutTelescopeValue})|altTelescopeValue({altTelescopeValue})");
 
             //přepočet alt-azimut souřadnic na ekvitoriální pro aktuální čas:
             cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST);
@@ -127,34 +118,71 @@ namespace AstroCalc
 
                 string _ra_StelariumFormat_Telecope = get_ra_StelariumFormat(ha_);
                 _stelariumVirtualPort.Write(_ra_StelariumFormat_Telecope);
-                Console.WriteLine(_ra_StelariumFormat_Telecope);
+                //Console.WriteLine(_ra_StelariumFormat_Telecope);
+                //log.Debug("_ra_StelariumFormat_Telecope:"+_ra_StelariumFormat_Telecope);
                 messageProcessed = true;
             }
 
             if (requestFromStelarium.Contains(":GD#"))
             {
                 string _dec_StelariumFormat_Telescope = get_dec_StelariumFormat(_dec);
-                Console.WriteLine(_dec_StelariumFormat_Telescope);
+                //Console.WriteLine(_dec_StelariumFormat_Telescope);
                 _stelariumVirtualPort.Write(_dec_StelariumFormat_Telescope);
+                //log.Debug("_dec_StelariumFormat_Telescope:"+_dec_StelariumFormat_Telescope);
                 messageProcessed = true;
             }
 
+            //Toto se nastaví při zmáčknutí synchronizace s objektem ve Stelariu:
+            //2021-09-18 15:30:31,857 [11] DEBUG Program - 18.09.2021 15:30:31 DataFromStelarium:#:Q#:Sr18:36:57#
+            //2021 - 09 - 18 15:30:31,922[9] DEBUG Program -18.09.2021 15:30:31 DataFromStelarium::Sd + 38 * 47:09#
+            
+            //Set ra:
             if (requestFromStelarium.Contains("Sr"))
             {
-                Console.WriteLine("1");
+                //Console.WriteLine("0");
+                //Zdá se, že pokud budu vracet hodnotu 1 každou sekundu (simulace, kdy se dalekohled natáčí a pak to uzavřu 0, vše je OK a příkaz Sr pak pokračuje Sd atd...
+                Thread.Sleep(1000); //PROBLEM: posun zabere několik sekund, možná minut -> pak se bude muset dát znovu sync?
+                _stelariumVirtualPort.Write("1"); //"#:Q#:Sr05:16:42#"
+                Thread.Sleep(1000); //PROBLEM: posun zabere několik sekund, možná minut -> pak se bude muset dát znovu sync?
+                _stelariumVirtualPort.Write("1"); //"#:Q#:Sr05:16:42#"
+                Thread.Sleep(1000); //PROBLEM: posun zabere několik sekund, možná minut -> pak se bude muset dát znovu sync?
+                _stelariumVirtualPort.Write("1"); //"#:Q#:Sr05:16:42#"
+                Thread.Sleep(1000); //PROBLEM: posun zabere několik sekund, možná minut -> pak se bude muset dát znovu sync?
+                _stelariumVirtualPort.Write("1"); //"#:Q#:Sr05:16:42#"
+                Thread.Sleep(1000); //PROBLEM: posun zabere několik sekund, možná minut -> pak se bude muset dát znovu sync?
                 _stelariumVirtualPort.Write("0"); //"#:Q#:Sr05:16:42#"
                 messageProcessed = true;
-            }
+                
+                //zde by se měla spustit úloha:
+                if (ArduinoStepMotorController.RunningTaskSlew==false) {
+                    //TODO: z hodnot "Sr" nějak vydyndat souřadnice...//"#:Q#:Sr05:16:42#"
+                    Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
+                    Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
+                    //TODO udělat jako obecnou vlastnot:
+                    ArduinoStepMotorController arduinoStepMottor = new ArduinoStepMotorController("COM4");
+                    arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, raStar, decStar);
+                    while(ArduinoStepMotorController.RunningTaskSlew){
+                        _stelariumVirtualPort.Write("1");
+                        Thread.Sleep(1000);
+                    }
+                    //po nasměrování na objekt by se měla spustit úloha na jeho pronásledování:
+                    arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, raStar, decStar);
+                }
+                
+                
 
+            }
+            //Set declination:
             if (requestFromStelarium.Contains("Sd"))
             {
-                Console.WriteLine("1"); //":Sd+45*59:43#"
+                //Console.WriteLine("0"); //":Sd+45*59:43#"
                 _stelariumVirtualPort.Write("0");
                 messageProcessed = true;
             }
+
             if (requestFromStelarium.Contains(":MS#"))
             {
-                Console.WriteLine("0");
+                //Console.WriteLine("0");
                 _stelariumVirtualPort.Write("1");
                 messageProcessed = true;
             }
