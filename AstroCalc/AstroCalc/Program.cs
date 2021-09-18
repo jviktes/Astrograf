@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
 
 namespace AstroCalc
 {
@@ -16,9 +17,12 @@ namespace AstroCalc
         ReadingDataFromTelescope=1, //načítá natočení os z arduina a ty se pak zobrazují ve Stelariu jako telescope
         ControllingTelescope = 2, //pro dané souřadnice objektu (ra,dec) posílá azimutální souřadnice do arduinaStepMotor, které natáčí motorkama
     }
-
+    
     public class Program
     {
+        
+    
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger("Program");
 
         //GSM poloha = konstanty
 
@@ -34,8 +38,9 @@ namespace AstroCalc
 
         static void Main(string[] args)
         {
-
+            log4net.Config.XmlConfigurator.Configure();
             Console.WriteLine("AstroCalc starting...");
+            log.Debug("Starting...");
 
             SerialPort stelariumVirtualPort = new SerialPort("COM1"); //tento port je pro komunikaci mezi Stelarium a touto konzovou aplikaci
 
@@ -50,6 +55,10 @@ namespace AstroCalc
 
             Console.WriteLine("Stelarium port created.");
 
+
+            //TODO:
+            //zde je nutné udělat logiku, např. pokud ve Stelariu zaměřím objekt, tak se přepne režim a začnu objekt sledovat...atd.
+            //nebo mít 2 arduina, které by nezávisle pracovaly na sobě (ArduinoPotencimetr a ArduinoStepMotor, nebo by to šlo najednou?
             //Nastavení typu ovládání:
             eTelescopeControlling = eTelescopeControlling.ReadingDataFromTelescope;
 
