@@ -17,6 +17,7 @@ namespace ArduinoSerialLink
 
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger("Program");
         public static bool RunningTaskSlew = false;
+        public static bool FollowingObjectTask = false;
 
         public ArduinoStepMotorController(string portName)
         {
@@ -57,8 +58,10 @@ namespace ArduinoSerialLink
             Console.WriteLine($"DataReceived:{dataFromTelescope}");
             //TOOD: parsing data
             //TODO: pokud budou příkazy o natočení hotovy, pak :
-            RunningTaskSlew = false;
-
+            if (dataFromTelescope.Contains("RunningTaskSlewFinished")) {
+                RunningTaskSlew = false;
+            }
+            
         }
 
         /// <summary>
@@ -89,17 +92,19 @@ namespace ArduinoSerialLink
 
             try
             {
-                while (true)
+             
+                while (!FollowingObjectTask)
                 {
                     cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
                     ALT_AZIM_Values aLT_AZIM_Values = cBasicAstroData.az_al(DateTime.Now, ra, dec);
                     String stepMottorCmd = $"AZ:{Math.Round((Double)aLT_AZIM_Values.Azim, 4)}|ALT:{Math.Round((Double)aLT_AZIM_Values.ALt, 4)}";
                     mySerialPort.WriteLine(stepMottorCmd);
                     //TODO: zde by se mělo asi čekat, až se příkaz dokončí...
-                    RunningTaskSlew = true;
+                    
                     Console.WriteLine(stepMottorCmd);
                     log.Debug(stepMottorCmd);
                     Thread.Sleep(1000);
+                    FollowingObjectTask = true;
                 }
             }
             catch (Exception ex)
