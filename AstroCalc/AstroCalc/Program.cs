@@ -38,7 +38,12 @@ namespace AstroCalc
         public static int ZONE = -1;
         public static int DST = -1;
 
-        //public static eTelescopeControlling eTelescopeControlling;
+
+        // tento port je pro komunikaci mezi Arduinem (vraci hodnoty potencimetru):
+        public static ArduinoTelescope arduinoTelescope = new ArduinoTelescope("COM3");
+
+        //Arduino pro rizeni motorku:
+        public static ArduinoStepMotorController arduinoStepMottor = new ArduinoStepMotorController("COM4");
 
         static void Main(string[] args)
         {
@@ -63,15 +68,7 @@ namespace AstroCalc
             //zde je nutné udělat logiku, např. pokud ve Stelariu zaměřím objekt, tak se přepne režim a začnu objekt sledovat...atd.
             //nebo mít 2 arduina, které by nezávisle pracovaly na sobě (ArduinoPotencimetr a ArduinoStepMotor, nebo by to šlo najednou?
             //Nastavení typu ovládání:
-            //eTelescopeControlling = eTelescopeControlling.ReadingDataFromTelescope;
-
-            //TODO udělat arduinoStepMottor jako obecnou vlastnost?
-            // tento port je pro komunikaci mezi Arduinem (vraci hodnoty potencimetru):
-            ArduinoTelescope arduinoTelescope = new ArduinoTelescope("COM3");
-            //Arduino pro rizeni motorku:
-            ArduinoStepMotorController arduinoStepMottor = new ArduinoStepMotorController("COM4");
-
-
+ 
             //Toto je Destination objekt, pokud nebude roven 0, pak se vlaknem bude volat každou sekundu příkaz na pootočení motorků:
             //Double raStar = 14.0000 + 15.0000 / 60 + 38.0000 / 36000;
             //Double decStar = 19.0000 + 10.0000 / 60 + 8.0000 / 3600;
@@ -79,18 +76,57 @@ namespace AstroCalc
             //Thread thread2 = new Thread(() => arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, raStar, decStar));
             //thread2.Start();
 
-            //nějaký cyklus (vlákno), které bude hlídat tasky?
+            while (true) {
+                foreach (KeyValuePair<eCalcSyncTaskTypes, eTaskStatus> task in arduinoStepMottor.TelescopeStepMotorTasks)
+                {
+                    //toto má největší prioritu, vyruší vše ostatní a začne se vykonávat, může být jen jedna
+                    if (task.Value == eTaskStatus.WaitingForProceed)
+                    {
+                        if (task.Key == eCalcSyncTaskTypes.Slew)
+                        {
+                            if (RA_destination != 0 & DEC_destination != 0)
+                            {
+                                arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+                            }
+                        }
+  
+                        // do something with entry.Value or entry.Key
+                        if (task.Key == eCalcSyncTaskTypes.Slew)
+                        {
+                            if (RA_destination != 0 & DEC_destination != 0)
+                            {
+                                arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+                                //po nasměrování na objekt by se měla spustit úloha na jeho pronásledování:
+                                arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        if (task.Key == eCalcSyncTaskTypes.Follow)
+                        {
 
-			while (true)
-			{
-                //PROBLEM: zde se defacto zastavi cele vlakno dokud se dalekohled nanamiri...
-                if (ArduinoStepMotorController.RunningTaskSlew == false) {
-                    if (RA_destination!=0 & DEC_destination!=0) {
-                        arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
-                        //po nasměrování na objekt by se měla spustit úloha na jeho pronásledování:
-                        arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+                        }
                     }
-				}
+
+				    if (task.Value == eTaskStatus.Running)
+				    {
+					    //Follow ==> bude se pokračovat:
+					    if (task.Key == eCalcSyncTaskTypes.Follow)
+					    {
+						    if (RA_destination != 0 & DEC_destination != 0)
+						    {
+							    arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+						    }
+					    }
+				    }
+				    if (task.Value == eTaskStatus.Nothing)
+				    {
+					    continue;
+				    }
+                   
+                }
                 Thread.Sleep(200);
             }
 
@@ -178,6 +214,10 @@ namespace AstroCalc
             {
                 //Console.WriteLine("0");
                 _stelariumVirtualPort.Write("1");
+                if (RA_destination != 0 & DEC_destination != 0)
+                {
+                    arduinoStepMottor.TelescopeStepMotorTasks[eCalcSyncTaskTypes.Slew] = eTaskStatus.WaitingForProceed;
+                }
                 messageProcessed = true;
             }
 
@@ -193,6 +233,7 @@ namespace AstroCalc
                 Console.WriteLine("Uknown request from Stelarium:");
                 Console.WriteLine(requestFromStelarium);
 			}
+
 
 
 
