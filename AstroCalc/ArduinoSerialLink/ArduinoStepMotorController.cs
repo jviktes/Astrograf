@@ -86,6 +86,7 @@ namespace ArduinoSerialLink
             _stelariumVirtualPort.Read(buffer, 0, bytes);
             string dataFromTelescope = Encoding.UTF8.GetString(buffer);
             Console.WriteLine($"DataReceived:{dataFromTelescope}");
+            log.Debug("dataFromArduinoStepMotor:" + dataFromTelescope);
             //TOOD: parsing data
             //TODO: pokud budou příkazy o natočení hotovy, pak :
             if (dataFromTelescope.Contains("RunningTaskSlewFinished")) {

@@ -40,10 +40,10 @@ namespace AstroCalc
 
 
         // tento port je pro komunikaci mezi Arduinem (vraci hodnoty potencimetru):
-        public static ArduinoTelescope arduinoTelescope = new ArduinoTelescope("COM3");
+        public static ArduinoTelescope arduinoTelescope = new ArduinoTelescope("COM4");
 
         //Arduino pro rizeni motorku:
-        public static ArduinoStepMotorController arduinoStepMottor = new ArduinoStepMotorController("COM4");
+        public static ArduinoStepMotorController arduinoStepMottor = new ArduinoStepMotorController("COM3");
 
         static void Main(string[] args)
         {
@@ -77,56 +77,66 @@ namespace AstroCalc
             //thread2.Start();
 
             while (true) {
-                foreach (KeyValuePair<eCalcSyncTaskTypes, eTaskStatus> task in arduinoStepMottor.TelescopeStepMotorTasks)
-                {
-                    //toto má největší prioritu, vyruší vše ostatní a začne se vykonávat, může být jen jedna
-                    if (task.Value == eTaskStatus.WaitingForProceed)
-                    {
-                        if (task.Key == eCalcSyncTaskTypes.Slew)
-                        {
-                            if (RA_destination != 0 & DEC_destination != 0)
-                            {
-                                arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
-                            }
-                        }
-  
-                        // do something with entry.Value or entry.Key
-                        if (task.Key == eCalcSyncTaskTypes.Slew)
-                        {
-                            if (RA_destination != 0 & DEC_destination != 0)
-                            {
-                                arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
-                                //po nasměrování na objekt by se měla spustit úloha na jeho pronásledování:
-                                arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
-                            }
-                            else
-                            {
-                                continue;
-                            }
-                        }
-                        if (task.Key == eCalcSyncTaskTypes.Follow)
-                        {
 
-                        }
-                    }
+				try
+				{
 
-				    if (task.Value == eTaskStatus.Running)
-				    {
-					    //Follow ==> bude se pokračovat:
-					    if (task.Key == eCalcSyncTaskTypes.Follow)
-					    {
-						    if (RA_destination != 0 & DEC_destination != 0)
-						    {
-							    arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
-						    }
-					    }
-				    }
-				    if (task.Value == eTaskStatus.Nothing)
-				    {
-					    continue;
-				    }
-                   
-                }
+					foreach (KeyValuePair<eCalcSyncTaskTypes, eTaskStatus> task in arduinoStepMottor.TelescopeStepMotorTasks.ToList())
+					{
+						//toto má největší prioritu, vyruší vše ostatní a začne se vykonávat, může být jen jedna
+						if (task.Value == eTaskStatus.WaitingForProceed)
+						{
+							if (task.Key == eCalcSyncTaskTypes.Slew)
+							{
+								if (RA_destination != 0 & DEC_destination != 0)
+								{
+									arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+								}
+							}
+
+							// do something with entry.Value or entry.Key
+							if (task.Key == eCalcSyncTaskTypes.Slew)
+							{
+								if (RA_destination != 0 & DEC_destination != 0)
+								{
+									arduinoStepMottor.SlewToObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+									//po nasměrování na objekt by se měla spustit úloha na jeho pronásledování:
+									arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+								}
+								else
+								{
+									continue;
+								}
+							}
+							if (task.Key == eCalcSyncTaskTypes.Follow)
+							{
+
+							}
+						}
+
+						if (task.Value == eTaskStatus.Running)
+						{
+							//Follow ==> bude se pokračovat:
+							if (task.Key == eCalcSyncTaskTypes.Follow)
+							{
+								if (RA_destination != 0 & DEC_destination != 0)
+								{
+									arduinoStepMottor.FollowObject(USER_LATITUDE, USER_LONGTITUDE, ZONE, DST, RA_destination, DEC_destination);
+								}
+							}
+						}
+						if (task.Value == eTaskStatus.Nothing)
+						{
+							continue;
+						}
+
+					}
+				}
+				catch (Exception ex)
+				{
+                    log.Error(ex);
+					//throw;
+				}
                 Thread.Sleep(200);
             }
 
