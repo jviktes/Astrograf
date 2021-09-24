@@ -5,6 +5,7 @@
 //test prepisu
 //https://lastminuteengineers.com/a4988-stepper-motor-driver-arduino-tutorial/
 // Define pin connections & motor's steps per revolution
+
 const int dirPin_AzimutMotor = 2;
 const int stepPin_AzimutMotor = 3;
 const int enPin_AzimutMotor=4;
@@ -15,27 +16,20 @@ const int transmittionRate = 1; //toto je pro prevod na vystupu
 const int stepDelay = 5400; //5.4s = 5400ms = 5400 000 milisec
 const int delayPause = 2700000;
 
-int incomingByte = 0; // for incoming serial data
-String stelariumCmd;
-
 double actualAzimutAngle;
-
-char angle_str[10]; 
-int idx; 
 
 String originalInputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
-String commandString = "";
 
 static const unsigned long REFRESH_INTERVAL = 1000; // ms
 static unsigned long lastRefreshTime = 0;
     
-SoftwareSerial myBluetooh(7, 8); // RX, TX
+SoftwareSerial myBluetooth(7, 8); // RX, TX
 
 void setup()
 {
   Serial.begin(9600);
-  myBluetooh.begin(9600);
+  myBluetooth.begin(9600);
   
   // Declare pins as Outputs
   pinMode(stepPin_AzimutMotor, OUTPUT);
@@ -44,10 +38,10 @@ void setup()
   digitalWrite(enPin_AzimutMotor,LOW);   
 
   Serial.println("Starting...");
-  myBluetooh.println("Start bluettoh terminal ");
+  myBluetooth.println("Start bluettoh terminal ");
   
   //aktualni azimut uhlu je např.
-  actualAzimutAngle =0.00; //45.50;
+  actualAzimutAngle =248.00; //45.50;  //toto musím nějak inicializovat, např, Jested = 248 st
 
   Serial.println("End setup...");
   delay(200); // Wait a second
@@ -65,8 +59,10 @@ int GetNumberOfSteps (double actualAzimutAngle,double destinationAngle ) {
 
 void MoveTo(int numberSteps, int delaySpeed, bool isClockWiseDirection) {
   Serial.println("MoveTo.Start(numberSteps):"+numberSteps);
-  myBluetooh.println("MoveTo.Start(numberSteps):"+numberSteps);
-  myBluetooh.println("MoveTo.Start(isClockWiseDirection):"+isClockWiseDirection);
+  myBluetooth.println("MoveTo.Start(numberSteps):"+numberSteps);
+  delay(10);
+  myBluetooth.println("MoveTo.Start(isClockWiseDirection):"+isClockWiseDirection);
+  delay(10);
   
   if (isClockWiseDirection==true) {
       digitalWrite(dirPin_AzimutMotor, HIGH);
@@ -84,8 +80,8 @@ void MoveTo(int numberSteps, int delaySpeed, bool isClockWiseDirection) {
     delay(delaySpeed);
   }
   Serial.println("MoveTo.End");
-  myBluetooh.println("MoveTo.End");
-  
+  myBluetooth.println("MoveTo.End");
+  delay(10);
 }
 
 void loop()
@@ -94,98 +90,74 @@ void loop()
    if(millis() - lastRefreshTime >= REFRESH_INTERVAL)
     {
         lastRefreshTime += REFRESH_INTERVAL;
-        //myBluetooh.println("actualAzimutAngle:"+String(actualAzimutAngle));
+        myBluetooth.println("actualAzimutAngle:"+String(actualAzimutAngle));
+        delay(10);
     }
     
-//podle dat se nastavi rotace na krokových motorech:
-if(stringComplete)
-{
-    stringComplete = false;
-    myBluetooh.println("Data:");
-    myBluetooh.println(originalInputString);
-
-    //parsing dat:
-    // $"AZ:{Math.Round((Double)aLT_AZIM_Values.Azim, 4)}|ALT:{Math.Round((Double)aLT_AZIM_Values.ALt, 4)}";
-    //AZ:191,254|ALT:47,6243
-    
-    int index_of_delimiter = originalInputString.indexOf('|');  //finds location of first ,
-  
-    String azRaw = originalInputString.substring(0, index_of_delimiter); //
-    String azValueRaw = azRaw.substring(3);
-
-  myBluetooh.println("azValueRaw:");
-  myBluetooh.println(azValueRaw);
-  
-    String altRaw = originalInputString.substring(index_of_delimiter+1);
-    String altValueRaw = altRaw.substring(4);
-
-  myBluetooh.println("altValueRaw:");
-  myBluetooh.println(altValueRaw);
-  
-    //upravy:
-    azValueRaw.replace(',', '.');
-    altValueRaw.replace('-','+');
-    altValueRaw.replace(',', '.');
-    
-    double requiredAzimutAngle = azValueRaw.toDouble();
-    double altitudeAngle = altValueRaw.toDouble();
-
-    //pojezd motorku:
-    int delaySpeed = 10;
-
-    bool isClockWiseDirection = true; //defaultní je ve smeru hod. rucicek, to je i ve smeru azimutu.
-
-    // (requiredAzimutAngle-actualAzimutAngle)
-    if ((requiredAzimutAngle-actualAzimutAngle)<0) {
-      isClockWiseDirection = false;
-      
-    }
-
-
-
-      int numberSteps = GetNumberOfSteps(actualAzimutAngle,requiredAzimutAngle);
-      if (numberSteps>0) {
-            myBluetooh.println("Parametry azimut pohybu: numberSteps"+String(numberSteps)+" | actualAzimutAngle:"+String(actualAzimutAngle)+" | requiredAngle:"+String(requiredAzimutAngle)+" | isClockWiseDirection:"+String(isClockWiseDirection));
-            MoveTo(numberSteps,delaySpeed,isClockWiseDirection);
-            actualAzimutAngle=requiredAzimutAngle;
-            Serial.println("RunningTaskSlewFinished");
-      }
-      
-    originalInputString = "";
-
-}
-
-
-//smycka pro port ze Stelaria:
-//while(Serial.available()) {
-//  stelariumCmd= Serial.readString();// read the incoming data as string toto načítá 
-//
-//  //TODO: parsing prikazu!
-//  Serial.println(String(stelariumCmd));
-// 
-//  int index_of_delimiter = stelariumCmd.indexOf('|');  //finds location of first ,
-//
-//  String azRaw = stelariumCmd.substring(0, index_of_delimiter); //AZ:aLT_AZIM_Values.Azim 
-//  String azValueRaw;
-//  azValueRaw = azRaw.substring(3, azRaw.length());
-//
-//    String altRaw = stelariumCmd.substring(index_of_delimiter+1, stelariumCmd.length()); //ALT:aLT_AZIM_Values.ALt 
-//  String altValueRaw;
-//  altValueRaw = altValueRaw.substring(4, altValueRaw.length());
-//  
-//  myBluetooh.println("azValueRaw:");
-//   myBluetooh.println(azValueRaw);
-//  myBluetooh.println("altValueRaw:");
-//   myBluetooh.println(altValueRaw);
-
-//}
-
-//delay(1000); // Wait a second
+        //podle dat se nastavi rotace na krokových motorech:
+        if(stringComplete)
+        {
+                stringComplete = false;
+                myBluetooth.println("Data:");
+                myBluetooth.println(originalInputString);
+            
+                //parsing dat:
+                // $"AZ:{Math.Round((Double)aLT_AZIM_Values.Azim, 4)}|ALT:{Math.Round((Double)aLT_AZIM_Values.ALt, 4)}";
+                //AZ:191,254|ALT:47,6243
+                
+                int index_of_delimiter = originalInputString.indexOf('|');  //finds location of first ,
+              
+                String azRaw = originalInputString.substring(0, index_of_delimiter); //
+                String azValueRaw = azRaw.substring(3);
+            
+                myBluetooth.println("azValueRaw:");
+                myBluetooth.println(azValueRaw);
+              
+                String altRaw = originalInputString.substring(index_of_delimiter+1);
+                String altValueRaw = altRaw.substring(4);
+                
+                delay(10);
+            
+                myBluetooth.println("altValueRaw:");
+                myBluetooth.println(altValueRaw);
+              
+                //upravy:
+                azValueRaw.replace(',', '.');
+                altValueRaw.replace('-','+');
+                altValueRaw.replace(',', '.');
+                
+                double requiredAzimutAngle = azValueRaw.toDouble();
+                double altitudeAngle = altValueRaw.toDouble();
+            
+                //pojezd motorku:
+                int delaySpeed = 10;
+            
+                bool isClockWiseDirection = true; //defaultní je ve smeru hod. rucicek, to je i ve smeru azimutu.
+            
+                // (requiredAzimutAngle-actualAzimutAngle)
+                if ((requiredAzimutAngle-actualAzimutAngle)<0) {
+                  isClockWiseDirection = false;
+                  
+                }
+            
+            
+            
+                  int numberSteps = GetNumberOfSteps(actualAzimutAngle,requiredAzimutAngle);
+                  if (numberSteps>0) {
+                        myBluetooth.println("Parametry azimut pohybu: numberSteps"+String(numberSteps)+" | actualAzimutAngle:"+String(actualAzimutAngle)+" | requiredAngle:"+String(requiredAzimutAngle)+" | isClockWiseDirection:"+String(isClockWiseDirection));
+                        MoveTo(numberSteps,delaySpeed,isClockWiseDirection);
+                        actualAzimutAngle=requiredAzimutAngle;
+                        Serial.println("RunningTaskSlewFinished");
+                  }
+                  
+                originalInputString = "";
+        
+        }
 }
 
 void serialEvent() {
   while (Serial.available()) {
-    //myBluetooh.println("serialEvent");//loguje každý prijaty znak
+    //myBluetooth.println("serialEvent");//loguje každý prijaty znak
     // get the new byte:
     char inChar = (char)Serial.read();
     // add it to the originalInputString:
