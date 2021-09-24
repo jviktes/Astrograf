@@ -63,8 +63,6 @@ namespace ArduinoSerialLink
 				mySerialPort.Write("Connection with ArduinoStepMotorController OK.");
                 mySerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedFromArduinoStepMotor);
 
-
-
             }
 			catch (Exception ex)
 			{
@@ -117,7 +115,8 @@ namespace ArduinoSerialLink
 			{
 				cAstroCalc.cBasicAstro cBasicAstroData = new cAstroCalc.cBasicAstro(userLatitude, userLongtitude, zone, dst);
 				ALT_AZIM_Values aLT_AZIM_Values = cBasicAstroData.az_al(DateTime.Now, ra, dec);
-				String stepMottorCmd = $"AZ:{Math.Round((Double)aLT_AZIM_Values.Azim, 4)}|ALT:{Math.Round((Double)aLT_AZIM_Values.ALt, 4)}";
+
+                String stepMottorCmd = $"AZ:{Math.Round((Double)aLT_AZIM_Values.Azim, 4)}|ALT:{Math.Round((Double)aLT_AZIM_Values.ALt, 4)}";
 				mySerialPort.WriteLine(stepMottorCmd);
 				//TODO: zde by se mělo asi čekat, až se příkaz dokončí...
                 TelescopeStepMotorTasks[eCalcSyncTaskTypes.Slew] = eTaskStatus.Running;

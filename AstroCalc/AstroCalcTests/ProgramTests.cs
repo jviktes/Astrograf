@@ -100,7 +100,24 @@ namespace AstroCalc.Tests
             Double test_altVal = 11.0000 + 53.0000 / 60 + 23.0000 / 3600;
 
             Ra_Dec_Values ra_Dec_Values = cBasicAstroData.ra_dec(DateTime.Now, test_azimutVal, test_altVal);
-            ALT_AZIM_Values az_al = cBasicAstroData.az_al(DateTime.Now, ra_Dec_Values.RA, ra_Dec_Values.DEC);
+            ALT_AZIM_Values az_al1 = cBasicAstroData.az_al(DateTime.Now, ra_Dec_Values.RA, ra_Dec_Values.DEC);
+
+            //Capella:
+            Double test_ra = 5.0000 + 16.0000 / 60 + 40.0000 / 36000;
+            Double test_dec = 45.0000 + 59.0000 / 60 + 43.0000 / 3600;
+            DateTime testDate = new DateTime(2021, 09, 23, 19, 35, 30);
+            ALT_AZIM_Values az_al2 = cBasicAstroData.az_al(testDate, test_ra, test_dec);
+            string resAzim =  $"{CoordinatesObject.getHoures(az_al2.Azim).ToString("00")}:{CoordinatesObject.getMinutes(az_al2.Azim).ToString("00")}:{CoordinatesObject.getSeconds(az_al2.Azim).ToString("00")}#";
+            string resAlt = $"{CoordinatesObject.getHoures(az_al2.ALt).ToString("00")}:{CoordinatesObject.getMinutes(az_al2.ALt).ToString("00")}:{CoordinatesObject.getSeconds(az_al2.ALt).ToString("00")}#";
+
+            //Stelarium data: az:15:21:17 alt: 8:39:33
+            //ha=13:28:35 dec: 46:01:06
+            //ra=5:16:41, dec: 45:59:43
+            //mean sideric time = 18h46min52s
+
+            //webovky data (http://www.stargazing.net/mas/al_az.htm):
+            //alt: 8h:42min15s
+            //azimut: 15:37:58
 
         }
     }

@@ -244,9 +244,6 @@ namespace AstroCalc
                 Console.WriteLine(requestFromStelarium);
 			}
 
-
-
-
         }
 
 		private static double getDECCoordinatesFromSd(string requestFromStelarium)
