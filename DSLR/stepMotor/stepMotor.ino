@@ -13,9 +13,10 @@ const int enPin_AzimutMotor=4;
 const int stepsPerRevolution = 1600; //200 = pro nastaveni MS1=0, MS2=0, MS3=0
 const double transmittionRate = 76/16; //toto je pro prevod na vystupu 
 
-const int stepDelay = 5400; //5.4s = 5400ms = 5400 000 milisec
-const int delayPause = 2700000;
- 
+const int stepDelay = 54000;//11368; //11368 ms //5.4s = 5400ms = 5400 000 milisec
+const int delayPause = stepDelay/2; 
+int counter = 0;
+
 SoftwareSerial myBluetooth(7, 8); // RX, TX
 
 void setup()
@@ -31,10 +32,33 @@ void setup()
 
   Serial.println("Starting...");
   myBluetooth.println("Start bluettoh terminal ");
+
+  digitalWrite(dirPin_AzimutMotor, HIGH);
   
   Serial.println("End setup...");
   delay(200); // Wait a second
   
+}
+
+
+
+void loop()
+{
+  // Spin motor slowly
+  //for(int x = 0; x < stepsPerRevolution; x++)
+  //{
+  Serial.println("loop:");
+  
+    digitalWrite(stepPin_AzimutMotor, HIGH);
+    delay(27000);
+    digitalWrite(stepPin_AzimutMotor, LOW);
+    //delayMicroseconds(stepDelay);
+    delay(27000);
+    counter++;
+    Serial.println(String(counter));
+  //}
+  //delay(1000); // Wait a second 
+  Serial.println("end loop:");
 }
 
 int GetNumberOfSteps (double actualAzimutAngle,double destinationAngle ) {
@@ -44,23 +68,4 @@ int GetNumberOfSteps (double actualAzimutAngle,double destinationAngle ) {
 
   numberSteps = uhlovyRozdil*stepsPerRevolution*transmittionRate/360; //TODO umi to prevest na int?
   return abs(numberSteps);
-}
-
-void loop()
-{
-  // Spin motor slowly
-  for(int x = 0; x < stepsPerRevolution; x++)
-  {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(2000);
-  }
-  delay(1000); // Wait a second
-
-
-  
-
-
-
 }
