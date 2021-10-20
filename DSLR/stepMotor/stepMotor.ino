@@ -11,10 +11,9 @@ const int stepPin_AzimutMotor = 3;
 const int enPin_AzimutMotor=4;
 
 const int stepsPerRevolution = 1600; //200 = pro nastaveni MS1=0, MS2=0, MS3=0
-const double transmittionRate = 76/16; //toto je pro prevod na vystupu 
+const double transmittionRate = 1;//76/16; //toto je pro prevod na vystupu 
 
-const int stepDelay = 54000;//11368; //11368 ms //5.4s = 5400ms = 5400 000 milisec
-const int delayPause = stepDelay/2; 
+const int delayPause = 200;//3800; //polovina 54000 = bez převodu ozub koly, 7600 s prevodem 76/16
 int counter = 0;
 
 SoftwareSerial myBluetooth(7, 8); // RX, TX
@@ -50,10 +49,10 @@ void loop()
   Serial.println("loop:");
   
     digitalWrite(stepPin_AzimutMotor, HIGH);
-    delay(27000);
+    delay(delayPause);
     digitalWrite(stepPin_AzimutMotor, LOW);
     //delayMicroseconds(stepDelay);
-    delay(27000);
+    delay(delayPause);
     counter++;
     Serial.println(String(counter));
   //}
